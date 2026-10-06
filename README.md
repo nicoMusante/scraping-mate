@@ -1,8 +1,10 @@
 # Mate Finder
 
-Buscador de mates tipo torpedo de todos los materiales en tiendas argentinas, incluidos combos con mate.
+Buscador de mates tipo torpedo individuales de todos los materiales en tiendas argentinas.
 
-La app consulta las tiendas al abrirse o al tocar **Actualizar**. Recorre el buscador y las categorías de torpedos enlazadas por cada tienda, sigue su paginación y consulta las fichas cuando el listado no informa los datos del producto. Muestra solamente las publicaciones cuyo nombre identifica un torpedo y que declaran stock, con imagen, precio y enlace original.
+La app consulta las tiendas al abrirse o al tocar **Actualizar**. Recorre el buscador y las categorías de torpedos enlazadas por cada tienda, sigue su paginación y consulta las fichas cuando el listado no informa datos del producto o su precio por transferencia. Muestra solamente mates torpedo individuales que declaran stock, con imagen, precio y enlace original; excluye combos, kits y conjuntos de mate con bombilla, termo u otros accesorios.
+
+Cuando la tienda informa un descuento por transferencia, ese importe se destaca con la etiqueta **Con transferencia** y el precio habitual queda como referencia. Se leen los importes de cada producto o se calcula un porcentaje explícito sin restricciones. Los precios de cuotas, descuentos de tarjeta, promociones con cupones o mínimos y precios sin impuestos no se confunden con el precio por transferencia. Para variantes con distintos precios se muestra **Desde**, usando una variante disponible. Si no se puede comprobar un descuento, se conserva el precio publicado.
 
 El detalle de cobertura muestra los resultados por tienda y distingue búsquedas completas, parciales y fallidas. “Completa” significa que se terminó de recorrer la búsqueda y las categorías detectadas, no que se haya comprobado todo el inventario privado de la tienda. Los productos agotados o sin disponibilidad verificable se excluyen.
 

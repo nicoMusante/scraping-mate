@@ -1,0 +1,225 @@
+[
+  {
+    "store": "Matessn",
+    "record": {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://www.matessn.com/productos/mate-torpedo-cincelado-croco/"
+      },
+      "name": "Mate torpedo cincelado croco",
+      "image": "https://acdn-us.mitiendanube.com/stores/006/508/581/products/img_9800-e6cd3d170279589a3617532287610869-480-0.webp",
+      "description": "Comprá online Mate torpedo cincelado croco por $52.000,00. Hacé tu pedido y pagalo online.",
+      "offers": {
+        "@type": "Offer",
+        "url": "https://www.matessn.com/productos/mate-torpedo-cincelado-croco/",
+        "priceCurrency": "ARS",
+        "price": "57000",
+        "availability": "https://schema.org/InStock",
+        "inventoryLevel": {
+          "@type": "QuantitativeValue",
+          "value": "21"
+        },
+        "seller": {
+          "@type": "Organization",
+          "name": "Mates SN"
+        }
+      }
+    },
+    "html": "<html><head></head><body><div class=\"js-product-container\"><a href=\"https://www.matessn.com/productos/mate-torpedo-cincelado-croco/\">Mate torpedo cincelado croco</a><span class=\"js-price-display product-item-price \">\n\t\t\t\t\t\t\t$52.000,00\n\t\t\t\t\t\t</span><span class=\"js-compare-price-display product-item-price-compare order-first mb-1\">\n\t\t\t\t\t\t\t\t$57.000,00\n\t\t\t\t\t\t\t</span><span class=\"js-payment-discount-price-product payment-discount-price-product \" data-priceraw-without-shipping=\"4160000\" data-combines-with-free-shipping=\"true\">\n            $41.600,00\n        </span><span class=\"js-payment-discount-name-product \">Transferencia</span></div></body></html>",
+    "expectedPrice": "52000.00",
+    "expectedTransferPrice": "41600.00"
+  },
+  {
+    "store": "Mates Bayres",
+    "record": {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://www.matesbayres.com.ar/productos/torpedo-prime/"
+      },
+      "name": "TORPEDO PRIME",
+      "image": "https://acdn-us.mitiendanube.com/stores/001/481/915/products/img_6734-a633da0a2a7cc7a6b917852019649510-480-0.webp",
+      "description": "Comprá Mate Torpedo Labrado TORPEDO PRIME 100% hecho a mano, único y exclusivo. Envío en el día y 15% off por transferencia.",
+      "sku": "MB-MA-TO-PR-UN",
+      "brand": {
+        "@type": "Brand",
+        "name": "MATES BAYRES"
+      },
+      "weight": {
+        "@type": "QuantitativeValue",
+        "unitCode": "KGM",
+        "value": "0.5"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": "https://www.matesbayres.com.ar/productos/torpedo-prime/",
+        "priceCurrency": "ARS",
+        "price": "179890",
+        "availability": "https://schema.org/InStock",
+        "inventoryLevel": {
+          "@type": "QuantitativeValue",
+          "value": "40"
+        },
+        "seller": {
+          "@type": "Organization",
+          "name": "MATES BAYRES"
+        }
+      }
+    },
+    "html": "<html><head></head><body><div class=\"js-product-container\" data-variants=\"[{&quot;available&quot;:true,&quot;is_visible&quot;:true,&quot;stock&quot;:40,&quot;contact&quot;:false,&quot;price_number&quot;:179890,&quot;price_with_payment_discount_short&quot;:&quot;$152.906,50&quot;}]\"><a href=\"https://www.matesbayres.com.ar/productos/torpedo-prime/\">TORPEDO PRIME</a><span class=\"js-price-display product-item-price \">\n\t\t\t\t\t\t\t$179.890,00\n\t\t\t\t\t\t</span><span class=\"js-compare-price-display product-item-price-compare order-first mb-1\" style=\"display:none;\">\n\t\t\t\t\t\t\t\t$0,00\n\t\t\t\t\t\t\t</span><span class=\"js-payment-discount-price-product payment-discount-price-product \" data-priceraw-without-shipping=\"15290650\" data-combines-with-free-shipping=\"true\">\n            $152.906,50\n        </span><span class=\"js-payment-discount-name-product \">Transferencia o depósito bancario</span></div></body></html>",
+    "expectedPrice": "179890.00",
+    "expectedTransferPrice": "152906.50"
+  },
+  {
+    "store": "Arcano Mates",
+    "record": {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://arcanomates.com/productos/mate-torpedo-uruguayo-exclusivo-virola-alpaca-cincelada-al-lacre-cuero-liso-avejentado-modelo-1-xqvdg/"
+      },
+      "name": "Mate Torpedo ROMA Uruguayo Exclusivo, Virola Alpaca Cincelada al Lacre, Cuero Repujado Premium, Avejentado - Modelo 1",
+      "image": "https://acdn-us.mitiendanube.com/stores/007/131/989/products/25-6bbcc96d2805b6d52917903583764372-480-0.webp",
+      "description": "&amp;#129481; Sobre este modelo Un mate artesanal con detalles trabajados a mano y terminaciones que se destacan a simple vista. Cada calabaza tiene su propia fo...",
+      "weight": {
+        "@type": "QuantitativeValue",
+        "unitCode": "KGM",
+        "value": "0.2"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": "https://arcanomates.com/productos/mate-torpedo-uruguayo-exclusivo-virola-alpaca-cincelada-al-lacre-cuero-liso-avejentado-modelo-1-xqvdg/",
+        "priceCurrency": "ARS",
+        "price": "80500",
+        "availability": "https://schema.org/InStock",
+        "inventoryLevel": {
+          "@type": "QuantitativeValue",
+          "value": "1"
+        },
+        "seller": {
+          "@type": "Organization",
+          "name": "Arcano Mates"
+        }
+      }
+    },
+    "html": "<html><head></head><body><div class=\"js-product-container\" data-variants=\"[{&quot;available&quot;:true,&quot;is_visible&quot;:true,&quot;stock&quot;:1,&quot;contact&quot;:false,&quot;price_number&quot;:80500,&quot;price_with_payment_discount_short&quot;:&quot;$60.375,00&quot;}]\"><a href=\"https://arcanomates.com/productos/mate-torpedo-uruguayo-exclusivo-virola-alpaca-cincelada-al-lacre-cuero-liso-avejentado-modelo-1-xqvdg/\">Mate Torpedo ROMA Uruguayo Exclusivo, Virola Alpaca Cincelada al Lacre, Cuero Repujado Premium, Avejentado - Modelo 1</a><span class=\"js-price-display item-price\" data-product-price=\"8050000\">\n                                $80.500,00\n                            </span><span class=\"js-compare-price-display price-compare\" style=\"display:none;\">\n                                    $0,00\n                                </span><span class=\"js-payment-discount-price-product payment-discount-price-product \" data-priceraw-without-shipping=\"6037500\" data-combines-with-free-shipping=\"true\">\n            $60.375,00\n        </span><span class=\"js-payment-discount-name-product \">Transferencia</span></div></body></html>",
+    "expectedPrice": "80500.00",
+    "expectedTransferPrice": "60375.00"
+  },
+  {
+    "store": "Teko Mates",
+    "record": {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://tekomates.com.ar/productos/torpedo-uruguayo-virola-cincelada-ref-alpaca-17j4k/"
+      },
+      "name": "Torpedo Uruguayo Virola Cincelada Ref. Alpaca",
+      "image": "https://acdn-us.mitiendanube.com/stores/005/723/153/products/img_8224-8f0c486cc570a85b5017864189418311-480-0.webp",
+      "description": "Torpedo Uruguayo, con virolón de alpaca cincelada en lacre y refuezo de alpaca en su base, interior de calabaza y recubierto con cuero seleccionado.Mate de g...",
+      "sku": "01-81 - su",
+      "weight": {
+        "@type": "QuantitativeValue",
+        "unitCode": "KGM",
+        "value": "0.5"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": "https://tekomates.com.ar/productos/torpedo-uruguayo-virola-cincelada-ref-alpaca-17j4k/",
+        "priceCurrency": "ARS",
+        "price": "64003",
+        "availability": "https://schema.org/InStock",
+        "inventoryLevel": {
+          "@type": "QuantitativeValue",
+          "value": "34"
+        },
+        "seller": {
+          "@type": "Organization",
+          "name": "Teko Mates"
+        }
+      }
+    },
+    "html": "<html><head></head><body><div class=\"js-product-container\" data-variants=\"[{&quot;available&quot;:true,&quot;is_visible&quot;:true,&quot;stock&quot;:6,&quot;contact&quot;:false,&quot;price_number&quot;:57334,&quot;price_with_payment_discount_short&quot;:&quot;$43.000,50&quot;},{&quot;available&quot;:true,&quot;is_visible&quot;:true,&quot;stock&quot;:20,&quot;contact&quot;:false,&quot;price_number&quot;:57334,&quot;price_with_payment_discount_short&quot;:&quot;$43.000,50&quot;},{&quot;available&quot;:true,&quot;is_visible&quot;:true,&quot;stock&quot;:8,&quot;contact&quot;:false,&quot;price_number&quot;:57334,&quot;price_with_payment_discount_short&quot;:&quot;$43.000,50&quot;}]\"><a href=\"https://tekomates.com.ar/productos/torpedo-uruguayo-virola-cincelada-ref-alpaca-17j4k/\">Torpedo Uruguayo Virola Cincelada Ref. Alpaca</a><span class=\"js-price-display product-item-price \">\n\t\t\t\t\t\t\t$57.334,00\n\t\t\t\t\t\t</span><span class=\"js-compare-price-display product-item-price-compare order-first mb-1\">\n\t\t\t\t\t\t\t\t$64.003,00\n\t\t\t\t\t\t\t</span><span class=\"js-payment-discount-price-product payment-discount-price-product \" data-priceraw-without-shipping=\"4300050\" data-combines-with-free-shipping=\"true\">\n            $43.000,50\n        </span><span class=\"js-payment-discount-name-product \">Efectivo/Transferencia</span></div></body></html>",
+    "expectedPrice": "57334.00",
+    "expectedTransferPrice": "43000.50"
+  },
+  {
+    "store": "Matermos",
+    "record": {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://www.matermos.com/productos/mate-torpedo-campeones-del-mundo-fudj1/"
+      },
+      "name": "Mate Torpedo Campeones del Mundo",
+      "image": "https://acdn-us.mitiendanube.com/stores/006/523/560/products/img_4419-bc8f7fd34fefb4034d17790619664625-480-0.webp",
+      "description": "Comprá online Mate Torpedo Campeones del Mundo por $61.800,00. Hacé tu pedido y pagalo online.",
+      "weight": {
+        "@type": "QuantitativeValue",
+        "unitCode": "KGM",
+        "value": "0.3"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": "https://www.matermos.com/productos/mate-torpedo-campeones-del-mundo-fudj1/",
+        "priceCurrency": "ARS",
+        "price": "61800",
+        "availability": "https://schema.org/InStock",
+        "inventoryLevel": {
+          "@type": "QuantitativeValue",
+          "value": "3"
+        },
+        "seller": {
+          "@type": "Organization",
+          "name": "matermos - Mate y Accesorios"
+        }
+      }
+    },
+    "html": "<html><head></head><body><div class=\"js-product-container\" data-variants=\"[{&quot;available&quot;:true,&quot;is_visible&quot;:true,&quot;stock&quot;:3,&quot;contact&quot;:false,&quot;price_number&quot;:61800,&quot;price_with_payment_discount_short&quot;:&quot;$52.530,00&quot;}]\"><a href=\"https://www.matermos.com/productos/mate-torpedo-campeones-del-mundo-fudj1/\">Mate Torpedo Campeones del Mundo</a><span class=\"js-price-display item-price\" data-product-price=\"6180000\">\n                                $61.800,00\n                            </span><span class=\"js-compare-price-display price-compare \" style=\"display:none;\" data-price-compare-visibility=\"false\">\n                                    $0,00\n                                </span><span class=\"js-payment-discount-price-product payment-discount-price-product \" data-priceraw-without-shipping=\"5253000\" data-combines-with-free-shipping=\"true\">\n            $52.530,00\n        </span><span class=\"js-payment-discount-name-product \">Transferencia</span></div></body></html>",
+    "expectedPrice": "61800.00",
+    "expectedTransferPrice": "52530.00"
+  },
+  {
+    "store": "Pa' Mate",
+    "record": {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://pamate.com.ar/productos/torpedo-con-base-1fl08/"
+      },
+      "name": "Torpedo Bolita",
+      "image": "https://acdn-us.mitiendanube.com/stores/007/112/262/products/img_7863-af1db8f186488a6b7217894940900151-480-0.webp",
+      "description": "Descubrí el Torpedo con Base, un mate que combina elegancia y tradición. Su virola cincelada de alpaca, la base de cuero y la doble costura aportan un detall...",
+      "weight": {
+        "@type": "QuantitativeValue",
+        "unitCode": "KGM",
+        "value": "0.5"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": "https://pamate.com.ar/productos/torpedo-con-base-1fl08/",
+        "priceCurrency": "ARS",
+        "price": "46900",
+        "availability": "https://schema.org/InStock",
+        "inventoryLevel": {
+          "@type": "QuantitativeValue",
+          "value": "3"
+        },
+        "seller": {
+          "@type": "Organization",
+          "name": "Pa Mate | Mates y accesorios"
+        }
+      }
+    },
+    "html": "<html><head></head><body><div class=\"js-product-container\" data-variants=\"[{&quot;available&quot;:true,&quot;is_visible&quot;:true,&quot;stock&quot;:3,&quot;contact&quot;:false,&quot;price_number&quot;:46900,&quot;price_with_payment_discount_short&quot;:&quot;$39.865,00&quot;}]\"><a href=\"https://pamate.com.ar/productos/torpedo-con-base-1fl08/\">Torpedo Bolita</a><span class=\"js-price-display item-price mr-1\" data-product-price=\"4690000\">\n                                    $46.900,00\n                                </span><span class=\"js-compare-price-display price-compare mt-1 mb-1 ml-0\" style=\"display:none;\">\n                                        $0,00\n                                    </span><span class=\"js-payment-discount-price-product payment-discount-price-product font-small\" data-priceraw-without-shipping=\"3986500\" data-combines-with-free-shipping=\"true\">\n            $39.865,00\n        </span><span class=\"js-payment-discount-name-product \">Transferencia</span></div></body></html>",
+    "expectedPrice": "46900.00",
+    "expectedTransferPrice": "39865.00"
+  }
+]

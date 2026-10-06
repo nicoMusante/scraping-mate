@@ -1,5 +1,7 @@
 # Validación de Mate Finder — 6 de octubre de 2026
 
+Esta comprobación es histórica e incluye combos. La validación del filtro de mates individuales y precios por transferencia está en [validacion-transferencia.md](validacion-transferencia.md).
+
 La consulta real al endpoint local devolvió HTTP 200 en 16,3 segundos: **327 publicaciones de mates torpedo en stock**, con 15 tiendas accesibles de 17 y 13 búsquedas completas. Los datos pueden variar en futuras actualizaciones.
 
 ## Problemas encontrados y corregidos

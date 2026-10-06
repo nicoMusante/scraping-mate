@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Esta aplicación busca **mates tipo torpedo de todos los materiales**, incluidos combos con mate, en tiendas argentinas. Al abrir la página o pulsar “Actualizar”, consulta las tiendas configuradas y muestra productos disponibles con imagen, precio, tienda y enlace original.
+Esta aplicación busca **mates tipo torpedo individuales de todos los materiales**, sin combos, kits ni conjuntos con accesorios, en tiendas argentinas. Al abrir la página o pulsar “Actualizar”, consulta las tiendas configuradas y muestra productos disponibles con imagen, precio, tienda y enlace original. Destaca el precio por transferencia cuando la tienda lo informa y conserva el precio habitual como referencia.
 
 ## Estado actual
 
@@ -38,10 +38,11 @@ No transformar esta ruta en una consulta ejecutada exclusivamente en el navegado
 2. Se consultan como máximo tres tiendas a la vez y las páginas de cada una secuencialmente.
 3. Cada petición vence a los 12 segundos. Los límites de tiempo o páginas se informan como cobertura incompleta.
 4. Se recorren los buscadores y las categorías de torpedos detectadas, incluida la paginación con fragmentos de Tiendanube. En WooCommerce se consultan las fichas de producto.
-5. Se leen los scripts públicos application/ld+json y se aceptan objetos Product cuyo nombre identifique un **torpedo**, sin exigir calabaza. No incluir accesorios ni otros modelos que sólo mencionan torpedos en la descripción.
+5. Se leen los scripts públicos application/ld+json y se aceptan objetos Product cuyo nombre identifique un **torpedo**, sin exigir calabaza. No incluir accesorios, combos, kits, packs, boxes ni mates vendidos con bombilla, termo u otros accesorios. La base y la virola que forman parte del mate no se consideran combos.
 6. Sólo se muestran ofertas con disponibilidad InStock. Se examinan todas las ofertas/variantes; se descartan OutOfStock, agotadas o sin disponibilidad declarada. Se admiten precios numéricos y priceSpecification.
 7. Los resultados se deduplican por dominio y ruta de producto, conservando un enlace original, y se ordenan con los que tienen precio primero. No recortar resultados a 20 por tienda.
 8. El endpoint devuelve cobertura y problemas por tienda. Una petición exitosa no implica que se haya podido terminar la revisión del catálogo.
+9. Cheerio permite asociar el precio por transferencia a la tarjeta o ficha correcta. Leer el método de pago y el importe publicado, o calcular un porcentaje explícito e incondicional de transferencia. No usar cuotas, precios sin impuestos, descuentos de tarjeta ni promociones con mínimos o cupones. Si hay variantes, usar precios de variantes disponibles y marcar “Desde” cuando sus importes difieren. Consultar la ficha original cuando el listado no publica un precio por transferencia.
 
 Las tiendas cambian HTML, datos estructurados y medidas anti-bots con frecuencia. Si una fuente deja de devolver resultados:
 
