@@ -1,0 +1,166 @@
+[
+  {
+    "store": "Matessn",
+    "record": {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://www.matessn.com/productos/mate-torpedo-cincelado-croco/"
+      },
+      "name": "Mate torpedo cincelado croco",
+      "image": "https://acdn-us.mitiendanube.com/stores/006/508/581/products/img_9800-e6cd3d170279589a3617532287610869-480-0.webp",
+      "description": "Comprá online Mate torpedo cincelado croco por $52.000,00. Hacé tu pedido y pagalo online.",
+      "offers": {
+        "@type": "Offer",
+        "url": "https://www.matessn.com/productos/mate-torpedo-cincelado-croco/",
+        "priceCurrency": "ARS",
+        "price": "57000",
+        "availability": "https://schema.org/InStock",
+        "inventoryLevel": {
+          "@type": "QuantitativeValue",
+          "value": "21"
+        },
+        "seller": {
+          "@type": "Organization",
+          "name": "Mates SN"
+        }
+      }
+    }
+  },
+  {
+    "store": "Pa' Mate",
+    "record": {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://pamate.com.ar/productos/torpedo-con-base-1fl08/"
+      },
+      "name": "Torpedo Bolita",
+      "image": "https://acdn-us.mitiendanube.com/stores/007/112/262/products/img_7863-af1db8f186488a6b7217894940900151-480-0.webp",
+      "description": "Descubrí el Torpedo con Base, un mate que combina elegancia y tradición. Su virola cincelada de alpaca, la base de cuero y la doble costura aportan un detall...",
+      "weight": {
+        "@type": "QuantitativeValue",
+        "unitCode": "KGM",
+        "value": "0.5"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": "https://pamate.com.ar/productos/torpedo-con-base-1fl08/",
+        "priceCurrency": "ARS",
+        "price": "46900",
+        "availability": "https://schema.org/InStock",
+        "inventoryLevel": {
+          "@type": "QuantitativeValue",
+          "value": "3"
+        },
+        "seller": {
+          "@type": "Organization",
+          "name": "Pa Mate | Mates y accesorios"
+        }
+      }
+    }
+  },
+  {
+    "store": "pampa-detail",
+    "record": {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "@id": "https://lapampamates.com/product/torpedo-premium-de-cuero-crudo/#product",
+      "name": "TORPEDO PREMIUM DE CUERO CRUDO",
+      "url": "https://lapampamates.com/product/torpedo-premium-de-cuero-crudo/",
+      "description": "Mate Torpedo de calabaza.\r\n\r\nForrado en cuero crudo, con fleje y virola de alpaca cincelada.\r\n\r\nbase de alpaca con bolitas de bronce.",
+      "image": "https://lapampamates.com/wp-content/uploads/2026/01/Diseno-sin-titulo-91.png",
+      "sku": 818,
+      "offers": [
+        {
+          "@type": "Offer",
+          "priceSpecification": [
+            {
+              "@type": "UnitPriceSpecification",
+              "price": "65000",
+              "priceCurrency": "ARS",
+              "valueAddedTaxIncluded": false,
+              "validThrough": "2027-12-31"
+            }
+          ],
+          "priceValidUntil": "2027-12-31",
+          "availability": "https://schema.org/InStock",
+          "url": "https://lapampamates.com/product/torpedo-premium-de-cuero-crudo/",
+          "seller": {
+            "@type": "Organization",
+            "name": "lapampamates.com",
+            "url": "https://lapampamates.com"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "store": "estilo-detail",
+    "record": {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "@id": "https://estiloaustral.com/producto/mate-torpedo-de-cuero-crudo-con-alpaca-y-base/#product",
+      "name": "Mate Torpedo de Cuero Crudo con Alpaca y Base",
+      "url": "https://estiloaustral.com/producto/mate-torpedo-de-cuero-crudo-con-alpaca-y-base/",
+      "description": "De forma similar a un torpedo, se mantiene angosto en la boca y ancho en la base.\r\n\r\nEste mate está compuesto por:\r\n\r\n \tCalabaza revestida en cuero crudo\r\n \tCon doble costura\r\n \tUna virola superior de alpaca cincelada\r\n \tCon base de cuero crudo a juego, para proporcionar estabilidad\r\n\r\nProducción Argentina Artesanal\r\nPor ser un producto artesanal, algunos detalles del modelo exhibido pueden variar. Aplica a los tamaños de las calabazas, tonos de la madera y a los diseños laterales de las virolas y los cincelados superiores, los cuales son variados y al azar por default.\r\nDe tener una especificación o solicitud de virola en particular, por favor, comentarlo previamente.",
+      "image": "https://estiloaustral.com/wp-content/uploads/2026/05/MATE0136-MATE-TORPEDO-CUERO-CRUDO-VIROLA-CINCELADA-CON-DOBLE-COSTURA-BASE-CUERO-CRUDO-RECTA2.png",
+      "sku": "MATE0136",
+      "offers": [
+        {
+          "@type": "Offer",
+          "priceSpecification": [
+            {
+              "@type": "UnitPriceSpecification",
+              "price": "88330",
+              "priceCurrency": "ARS",
+              "validThrough": "2027-12-31",
+              "valueAddedTaxIncluded": true
+            }
+          ],
+          "priceValidUntil": "2027-12-31",
+          "availability": "https://schema.org/InStock",
+          "url": "https://estiloaustral.com/producto/mate-torpedo-de-cuero-crudo-con-alpaca-y-base/",
+          "seller": {
+            "@type": "Organization",
+            "name": "Estilo Austral",
+            "url": "https://estiloaustral.com"
+          },
+          "price": "88330",
+          "priceCurrency": "ARS"
+        }
+      ]
+    }
+  },
+  {
+    "store": "Matessn",
+    "record": {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://www.matessn.com/productos/mate-torpedo-de-algarrobo-cincelado/"
+      },
+      "name": "Mate torpedo de algarrobo cincelado",
+      "image": "https://acdn-us.mitiendanube.com/stores/006/508/581/products/img_6138-e08fac904ea278536d17533982987481-480-0.webp",
+      "description": "Comprá online Mate torpedo de algarrobo cincelado por $39.000,00. Hacé tu pedido y pagalo online.",
+      "offers": {
+        "@type": "Offer",
+        "url": "https://www.matessn.com/productos/mate-torpedo-de-algarrobo-cincelado/",
+        "priceCurrency": "ARS",
+        "price": "39000",
+        "availability": "https://schema.org/InStock",
+        "inventoryLevel": {
+          "@type": "QuantitativeValue",
+          "value": "2"
+        },
+        "seller": {
+          "@type": "Organization",
+          "name": "Mates SN"
+        }
+      }
+    }
+  }
+]
