@@ -1,0 +1,10 @@
+node_modules/
+.next/
+.vercel/
+dist/
+.wrangler/
+.sites-runtime/
+.mate-torpedo-git-history/
+.env*
+!.env.example
+*.log
