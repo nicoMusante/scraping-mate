@@ -6,6 +6,12 @@ La app consulta las tiendas al abrirse o al tocar **Actualizar**. Recorre el bus
 
 Cuando la tienda informa un descuento por transferencia, ese importe se destaca con la etiqueta **Con transferencia** y el precio habitual queda como referencia. Se leen los importes de cada producto o se calcula un porcentaje explícito sin restricciones. Los precios de cuotas, descuentos de tarjeta, promociones con cupones o mínimos y precios sin impuestos no se confunden con el precio por transferencia. Para variantes con distintos precios se muestra **Desde**, usando una variante disponible. Si no se puede comprobar un descuento, se conserva el precio publicado.
 
+## Filtros y marcas personales
+
+Además de elegir la tienda, se puede definir un precio mínimo o máximo y ordenar por precio. Cada mate tiene botones de **me gusta** y **no me gusta**. Por defecto se muestran los mates marcados como me gusta y los que todavía no fueron marcados; el filtro permite ver cada estado por separado.
+
+Las marcas se guardan en el almacenamiento local del navegador. No requieren base de datos, pero pertenecen a ese navegador y dispositivo: no se comparten entre equipos y se eliminan al borrar los datos del sitio. Una base de datos sería necesaria sólo para sincronizarlas entre dispositivos o personas.
+
 El detalle de cobertura muestra los resultados por tienda y distingue búsquedas completas, parciales y fallidas. “Completa” significa que se terminó de recorrer la búsqueda y las categorías detectadas, no que se haya comprobado todo el inventario privado de la tienda. Los productos agotados o sin disponibilidad verificable se excluyen.
 
 ## Tecnologías
