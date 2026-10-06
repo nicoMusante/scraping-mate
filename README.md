@@ -1,8 +1,10 @@
 # Mate Finder
 
-Buscador de mates de calabaza tipo torpedo en tiendas argentinas.
+Buscador de mates tipo torpedo de todos los materiales en tiendas argentinas, incluidos combos con mate.
 
-La app consulta las tiendas al abrirse o al tocar **Actualizar**, toma sus datos estructurados públicos y muestra solamente los productos que indiquen disponibilidad, con imagen, precio y enlace a la publicación original.
+La app consulta las tiendas al abrirse o al tocar **Actualizar**. Recorre el buscador y las categorías de torpedos enlazadas por cada tienda, sigue su paginación y consulta las fichas cuando el listado no informa los datos del producto. Muestra solamente las publicaciones cuyo nombre identifica un torpedo y que declaran stock, con imagen, precio y enlace original.
+
+El detalle de cobertura muestra los resultados por tienda y distingue búsquedas completas, parciales y fallidas. “Completa” significa que se terminó de recorrer la búsqueda y las categorías detectadas, no que se haya comprobado todo el inventario privado de la tienda. Los productos agotados o sin disponibilidad verificable se excluyen.
 
 ## Tecnologías
 
@@ -20,6 +22,13 @@ npm run dev
 ```
 
 Abrí [http://localhost:3000](http://localhost:3000).
+
+Para verificar el scraper y compilar:
+
+```bash
+npm test
+npm run build
+```
 
 ## Publicar en Vercel desde GitHub
 
@@ -43,6 +52,7 @@ Cada `git push` a `main` generará un deployment de producción. Las ramas y pul
 
 ## Consideraciones
 
-- La app consulta 17 tiendas en cada actualización, con hasta tres consultas simultáneas para no sobrecargarlas.
-- Cada consulta tiene un límite de 12 segundos; la función de Vercel admite hasta 30 segundos.
-- Las tiendas pueden cambiar su HTML, su disponibilidad o bloquear las consultas. Por eso pueden variar los resultados o la cantidad de fuentes que responde.
+- Las 17 fuentes están configuradas en `lib/mate-scraper.ts`. Se consultan hasta tres tiendas simultáneamente y las páginas de cada tienda se recorren de a una.
+- Cada petición tiene un límite de 12 segundos. La búsqueda tiene un presupuesto global de cuatro minutos y la función de Vercel declara `maxDuration = 300`. Si el plan de hosting impone un límite menor, debe ajustarse el presupuesto o distribuirse la búsqueda entre solicitudes.
+- No hay recorte de 20 resultados por tienda. El límite de seguridad de 100 páginas por fuente y los límites de tiempo siempre se informan como cobertura incompleta.
+- Las tiendas pueden cambiar su HTML, su disponibilidad o bloquear las consultas. Los errores se atribuyen a la tienda correspondiente y se conservan los resultados obtenidos antes del fallo.

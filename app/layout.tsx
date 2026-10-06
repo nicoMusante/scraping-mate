@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Mate Finder | Torpedos de calabaza",
-  description: "Buscador de mates torpedo de calabaza en tiendas argentinas.",
+  title: "Mate Finder | Mates tipo torpedo",
+  description: "Buscador de mates tipo torpedo de todos los materiales en tiendas argentinas.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
