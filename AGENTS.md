@@ -83,3 +83,4 @@ Mantener ignorados node_modules/, .next/, .vercel/, dist/, .wrangler/, .sites-ru
 - Mostrar claramente que precios y stock pertenecen a cada tienda y pueden cambiar.
 - No presentar resultados estáticos como si fueran actuales.
 - No agregar pagos, carrito, cuentas de usuario, almacenamiento o automatizaciones sin una solicitud explícita.
+- Las marcas “me gusta” y “no me gusta” se guardan en `localStorage` del navegador. Por defecto se muestran las marcadas como me gusta y las que todavía no tienen marca. No requieren base de datos, pero no se sincronizan entre dispositivos o navegadores y se pierden si la persona borra los datos del sitio. Para sincronización o cuentas, se necesitaría una base de datos y autenticación solicitadas explícitamente.
