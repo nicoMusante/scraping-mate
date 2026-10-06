@@ -23,21 +23,23 @@ Abrí [http://localhost:3000](http://localhost:3000).
 
 ## Publicar en Vercel desde GitHub
 
-1. Creá un repositorio vacío en GitHub.
-2. Desde esta carpeta, subí el proyecto:
+### Ramas y publicación de cambios
 
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial Mate Finder"
-   git branch -M main
-   git remote add origin https://github.com/TU-USUARIO/mate-finder.git
-   git push -u origin main
-   ```
+- `main`: versión de producción. Integrar cambios mediante pull requests.
+- `desarrollo`: cambios en preparación y pruebas. Vercel genera previews cuando el repositorio está conectado.
+- Para trabajos grandes, crear una rama `feature/nombre` desde `desarrollo` e integrarla allí mediante un pull request.
 
-3. En [Vercel](https://vercel.com/new), elegí **Import Git Repository** y seleccioná el repositorio.
-4. Vercel detectará Next.js automáticamente. No hace falta agregar variables de entorno.
-5. Elegí **Deploy**.
+Trabajar en `desarrollo`, ejecutar `npm run dev` y comprobar la página y `/api/buscar`. Antes de publicar, ejecutar `npm run build` y revisar el preview de Vercel. Después abrir un pull request de `desarrollo` hacia `main` y fusionarlo cuando las comprobaciones sean correctas. Integrar con un merge commit para conservar la relación entre ambas ramas.
+
+El workflow de GitHub Actions comprueba instalación y compilación en ambas ramas y sus pull requests. `lint` todavía tiene un error existente en `app/page.tsx`; no es una comprobación obligatoria hasta corregirlo.
+
+En GitHub, configurar una regla para `main` que exija pull requests y la comprobación `build`, bloquee force pushes y eliminación, y se aplique también a administradores. En un repositorio personal puede exigirse PR sin exigir la aprobación de otra persona.
+
+En Vercel, importar `nicoMusante/scraping-mate`, usar la raíz del repositorio y seleccionar `main` como Production Branch. Mantener previews para `desarrollo` y pull requests. No se requieren variables de entorno de la aplicación. Crear la rama por sí solo no activa despliegues: primero debe conectarse el proyecto a Vercel.
+
+1. En [Vercel](https://vercel.com/new), elegí **Import Git Repository** y seleccioná `nicoMusante/scraping-mate`.
+2. Vercel detectará Next.js automáticamente. No hace falta agregar variables de entorno.
+3. Confirmá `main` como rama de producción y elegí **Deploy**.
 
 Cada `git push` a `main` generará un deployment de producción. Las ramas y pull requests generan previews para probar cambios antes de publicarlos.
 
