@@ -1,5 +1,7 @@
+import { load as loadHtml } from "cheerio";
+
 export type Source = { store: string; url: string };
-export type Product = { name: string; url: string; image?: string; price?: string; currency?: string; store: string };
+export type Product = { name: string; url: string; image?: string; price?: string; transferPrice?: string; priceFrom?: boolean; currency?: string; store: string };
 export type SourceReport = {
   store: string; url: string; status: "complete" | "partial" | "error";
   pages: number; inspectedProducts: number; products: number; issues: string[];
@@ -56,8 +58,18 @@ export function productKey(url: string): string {
 function isProductType(value: unknown): boolean {
   return list(value).some((type) => /^(?:https?:\/\/schema\.org\/)?Product$/i.test(scalar(type)));
 }
-function isTorpedo(name: string): boolean {
-  return /\btorpedos?\b/i.test(name) && !/^(?:bombilla|funda|soporte|virola|base)\b/i.test(name);
+export function isSingleMate(name: string, description = ""): boolean {
+  const title = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const accessory = "(?:bombill\\w*|termos?|materas?|yerberas?)";
+  const bundled = [...description.matchAll(new RegExp(`\\b(?:incluye|incluidos?|conjunto de|acompañado de)\\b[^.!\\n]{0,100}\\b${accessory}\\b`, "gi"))]
+    .some((match) => !/\b(?:no(?:\s+se)?|sin)\s*$/i.test(description.slice(Math.max(0, match.index! - 16), match.index))
+      && !new RegExp(`\\b(?:no|sin)\\s+(?:una?\\s+)?${accessory}\\b`, "i").test(match[0]));
+  return /\btorpedos?\b/i.test(title)
+    && !/^(?:bombilla|funda|soporte|virola|base)\b/i.test(title)
+    && !/\b(?:combos?|kits?|sets?|packs?|box|bombill\w*|termos?|materas?|yerber\w*|azucarer\w*|canastas?)\b/i.test(title)
+    && !/\bpico\s+(?:de\s+)?loro\b/i.test(title)
+    && !/\b(?:[2-9]\s*[x×]\s*[1-9]|[x×]\s*[2-9])\b/i.test(title)
+    && !bundled;
 }
 function offers(record: RecordValue): RecordValue[] {
   return list(record.offers).flatMap((value) => {
@@ -91,7 +103,7 @@ export function productsFromRecords(records: RecordValue[], source: Source): Pro
   const products: Product[] = [];
   for (const record of records) {
     const name = text(record.name);
-    if (!isTorpedo(name)) continue;
+    if (!isSingleMate(name, text(record.description))) continue;
     // A sold-out first variant must not hide another available variant.
     const offer = offers(record).find((item) => availability(item) === "instock");
     if (!offer) continue;
@@ -103,6 +115,101 @@ export function productsFromRecords(records: RecordValue[], source: Source): Pro
       currency: scalar(offer.priceCurrency ?? priceSpec.priceCurrency) || undefined });
   }
   return products;
+}
+
+function money(value: string | undefined): number | undefined {
+  if (!value) return undefined;
+  const digits = value.replace(/[^\d.,]/g, "");
+  const normalized = digits.includes(",") ? digits.replace(/\./g, "").replace(",", ".")
+    : /^\d{1,3}(?:\.\d{3})+$/.test(digits) ? digits.replace(/\./g, "") : digits;
+  const amount = Number(normalized);
+  return Number.isFinite(amount) && amount > 0 ? amount : undefined;
+}
+function cents(value: string | undefined): number | undefined {
+  const amount = Number(value);
+  return value && Number.isFinite(amount) && amount > 0 ? amount / 100 : undefined;
+}
+function transferRate(message: string): number | undefined {
+  // Never apply a conditional, maximum, tax or coupon discount as a cash price.
+  if (/hasta|a partir|minim|mínim|superior|cup[oó]n|no acumul|seleccionad|exclusiv|excepto|primer[ao]|s[oó]lo|[uú]nicamente|compras|pedidos/i.test(message)) return undefined;
+  const rate = message.match(/\b(\d+(?:[.,]\d+)?)\s*%\s*(?:de\s+)?(?:descuento|off)\s*(?:pagando\s+)?(?:por|con|en)\s+(?:pago\s+por\s+)?transferencia(?:\s+bancaria)?\b/i)?.[1];
+  const percentage = Number(rate?.replace(",", "."));
+  return percentage > 0 && percentage < 100 ? percentage : undefined;
+}
+export function pricesFromHtml(html: string, products: Product[], base: string): Product[] {
+  if (!products.length) return products;
+  const $ = loadHtml(html);
+  const cards = new Map<string, ReturnType<typeof $>>();
+  $(".js-product-container").each((_, element) => {
+    const card = $(element);
+    const href = card.find('a[href*="/productos/"], a[href*="/producto/"], a[href*="/product/"]').first().attr("href");
+    const url = href && absolute(href, base);
+    if (url) cards.set(productKey(url), card);
+  });
+  const globalRates = new Set<number>();
+  $(".et-campaign, .js-adbar-message, .js-adbar-primary-message-container, .js-informative-banner-title").each((_, element) => {
+    const node = $(element);
+    const rate = transferRate(node.hasClass("js-informative-banner-title") ? node.parent().text() : node.text());
+    if (rate) globalRates.add(rate);
+  });
+  const globalRate = globalRates.size === 1 ? [...globalRates][0] : undefined;
+  return products.map((original) => {
+    const product = { ...original };
+    const card = cards.get(productKey(product.url));
+    // On detail pages, restrict prices to the main product form or summary.
+    const scope = card ?? (productKey(base) === productKey(product.url) ? $("#single-product, .summary, [data-store^='product-form-']").first() : undefined);
+    let regular = money(product.price);
+    let transfer: number | undefined;
+    if (scope?.length) {
+      const displayed = scope.find(".js-price-display").first();
+      regular = cents(displayed.attr("data-product-price")) ?? money(displayed.text()) ?? regular;
+      const method = scope.find(".js-payment-discount-name-product").first().text();
+      if (/transferencia/i.test(method)) {
+        const discount = scope.find(".js-payment-discount-price-product").first();
+        transfer = cents(discount.attr("data-priceraw-without-shipping")) ?? money(discount.text());
+      }
+      const variantsData = scope.attr("data-variants") ?? scope.find("[data-variants]").first().attr("data-variants");
+      if (variantsData) {
+        try {
+          const available = list(JSON.parse(variantsData)).map(object).filter((variant) => variant.available === true && variant.is_visible !== false && (variant.stock == null || Number(variant.stock) > 0) && variant.contact !== true);
+          const priced = available.filter((variant) => money(scalar(variant.price_number))).sort((a, b) => Number(a.price_number) - Number(b.price_number));
+          if (priced.length) {
+            const discounted = /transferencia/i.test(method) ? priced.filter((variant) => {
+              const amount = money(scalar(variant.price_with_payment_discount_short));
+              return amount !== undefined && amount < Number(variant.price_number);
+            }).sort((a, b) => money(scalar(a.price_with_payment_discount_short))! - money(scalar(b.price_with_payment_discount_short))!) : [];
+            const variant = discounted[0] ?? priced[0];
+            regular = Number(variant.price_number);
+            // Do not reuse the displayed discount of a different/sold-out variant.
+            transfer = /transferencia/i.test(method) ? money(scalar(variant.price_with_payment_discount_short)) : undefined;
+            product.priceFrom = new Set(priced.map((item) => Number(item.price_number))).size > 1 || new Set(discounted.map((item) => item.price_with_payment_discount_short)).size > 1;
+          } else { transfer = undefined; }
+        } catch { transfer = undefined; }
+      }
+      if (transfer === undefined && productKey(base) === productKey(product.url)) {
+        scope.find("p, .transfer-price, .bank-transfer-price").each((_, element) => {
+          const message = $(element).text();
+          if (/transferencia/i.test(message) && !/hasta|mínim|minim|superior|cuotas|cup[oó]n/i.test(message)) {
+            const amounts = [...message.matchAll(/\$\s*[\d.]+(?:,\d{1,2})?/g)];
+            const amount = amounts.length === 1 ? amounts[0][0]
+              : message.match(/transferencia(?:\s+bancaria)?\s*[:—-]?\s*(?:ARS\s*)?(\$\s*[\d.]+(?:,\d{1,2})?)/i)?.[1]
+                ?? message.match(/(\$\s*[\d.]+(?:,\d{1,2})?)\s*(?:pagando\s+)?(?:con|por|en)\s+transferencia/i)?.[1];
+            if (amount) transfer = money(amount);
+            else if (regular) {
+              const rate = transferRate(message);
+              if (rate) transfer = Math.round(regular * (100 - rate)) / 100;
+            }
+          }
+        });
+      }
+    }
+    if (regular) {
+      product.price = regular.toFixed(2);
+      if (transfer === undefined && globalRate) transfer = Math.round(regular * (100 - globalRate)) / 100;
+      if (transfer !== undefined && transfer > 0 && transfer < regular) product.transferPrice = transfer.toFixed(2);
+    }
+    return product;
+  });
 }
 type Link = { url: string; label: string; attributes: string };
 function links(html: string, base: string): Link[] {
@@ -181,10 +288,15 @@ export async function inspect(source: Source, load: LoadPage = loadPage, budgetM
       for (const record of parsed.records) {
         const original = productUrl(record, url);
         if (original) { inspected.add(productKey(original)); listing.inspected.add(productKey(original)); }
-        else if (isTorpedo(text(record.name))) issue("Algunas publicaciones no informan el enlace original del producto.");
-        if (original && isTorpedo(text(record.name)) && !offers(record).some((offer) => availability(offer))) details.add(original);
+        else if (isSingleMate(text(record.name), text(record.description))) issue("Algunas publicaciones no informan el enlace original del producto.");
+        if (original && isSingleMate(text(record.name), text(record.description)) && !offers(record).some((offer) => availability(offer))) details.add(original);
       }
-      for (const product of productsFromRecords(parsed.records, { ...source, url })) products.set(productKey(product.url), product);
+      for (const product of pricesFromHtml(html, productsFromRecords(parsed.records, { ...source, url }), url)) {
+        const previous = products.get(productKey(product.url));
+        products.set(productKey(product.url), previous?.transferPrice && !product.transferPrice
+          ? { ...product, price: previous.price, transferPrice: previous.transferPrice, priceFrom: previous.priceFrom }
+          : product);
+      }
       for (const candidate of candidates) {
         if (!inspected.has(productKey(candidate))) details.add(candidate);
         inspected.add(productKey(candidate));
@@ -227,6 +339,8 @@ export async function inspect(source: Source, load: LoadPage = loadPage, budgetM
       }
     } catch (error) { issue(error instanceof Error ? error.message : "No se pudo consultar la tienda"); }
   }
+  // Some stores only advertise transfer discounts on the original detail page.
+  for (const product of products.values()) if (!product.transferPrice) details.add(product.url);
   // Detail pages are read sequentially; three stores run concurrently at most.
   for (const url of details) {
     if (Date.now() > deadline) { issue("Quedaron fichas de productos sin revisar por el límite de tiempo."); break; }
@@ -240,7 +354,10 @@ export async function inspect(source: Source, load: LoadPage = loadPage, budgetM
       if (!matching.length || matching.some((record) => !offers(record).some((offer) => availability(offer)))) {
         issue("Algunas fichas no informan datos o disponibilidad verificable.");
       }
-      for (const product of productsFromRecords(matching, { ...source, url: page.url })) products.set(productKey(product.url), product);
+      const current = products.get(productKey(url));
+      const detailProducts = productsFromRecords(matching, { ...source, url: page.url });
+      if (matching.length && !detailProducts.length) products.delete(productKey(url));
+      for (const product of pricesFromHtml(page.html, detailProducts.map((item) => ({ ...current, ...item })), page.url)) products.set(productKey(product.url), product);
     } catch (error) { issue(`Ficha de producto: ${error instanceof Error ? error.message : "consulta fallida"}`); }
   }
   report.inspectedProducts = inspected.size;
