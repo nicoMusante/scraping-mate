@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   applicationName: "Mate Finder",
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: "/icon-192.png",
+    shortcut: "/icon-192.png",
     apple: "/apple-touch-icon.png",
   },
   appleWebApp: { capable: true, title: "Mate Finder", statusBarStyle: "black-translucent" },
