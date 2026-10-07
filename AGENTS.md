@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Esta aplicación busca **mates tipo torpedo individuales de todos los materiales**, sin combos, kits ni conjuntos con accesorios, en tiendas argentinas. Al abrir la página o pulsar “Actualizar”, consulta las tiendas configuradas y muestra productos disponibles con imagen, precio, tienda y enlace original. Destaca el precio por transferencia cuando la tienda lo informa y conserva el precio habitual como referencia.
+Esta aplicación busca **mates individuales** en tiendas argentinas, sin combos, kits ni conjuntos con accesorios. Permite elegir los tipos más frecuentes (torpedo, camionero, imperial, criollo, uruguayo, perita y galleta) o hacer una búsqueda libre por tipo, nombre o material. Al abrir la página, al buscar o al pulsar “Actualizar”, consulta las tiendas configuradas y muestra productos disponibles con imagen, precio, tienda y enlace original. Destaca el precio por transferencia cuando la tienda lo informa y conserva el precio habitual como referencia.
 
 ## Estado actual
 
@@ -24,7 +24,7 @@ Esta aplicación busca **mates tipo torpedo individuales de todos los materiales
 - Configuración de Next: next.config.ts.
 - Instrucciones para la persona usuaria: README.md.
 
-La ruta GET /api/buscar corre en Node.js como Vercel Function. Declara:
+La ruta GET /api/buscar corre en Node.js como Vercel Function. Recibe opcionalmente `q` para indicar el tipo o texto a buscar; si falta, busca `torpedo`. Declara:
 
 - runtime = "nodejs"
 - dynamic = "force-dynamic"
@@ -34,11 +34,11 @@ No transformar esta ruta en una consulta ejecutada exclusivamente en el navegado
 
 ## Cómo funciona el scraper
 
-1. La lista de tiendas está en el array sources de lib/mate-scraper.ts.
+1. La lista base de tiendas está en el array sources de lib/mate-scraper.ts. `sourcesForQuery` reemplaza el parámetro de búsqueda de cada URL según la consulta recibida.
 2. Se consultan como máximo tres tiendas a la vez y las páginas de cada una secuencialmente.
 3. Cada petición vence a los 12 segundos. Los límites de tiempo o páginas se informan como cobertura incompleta.
-4. Se recorren los buscadores y las categorías de torpedos detectadas, incluida la paginación con fragmentos de Tiendanube. En WooCommerce se consultan las fichas de producto.
-5. Se leen los scripts públicos application/ld+json y se aceptan objetos Product cuyo nombre identifique un **torpedo**, sin exigir calabaza. No incluir accesorios, combos, kits, packs, boxes ni mates vendidos con bombilla, termo u otros accesorios. La base y la virola que forman parte del mate no se consideran combos.
+4. Se recorren los buscadores y las categorías que coinciden con la consulta, incluida la paginación con fragmentos de Tiendanube. En WooCommerce se consultan las fichas de producto.
+5. Se leen los scripts públicos application/ld+json y se aceptan objetos Product cuyo nombre coincida con todos los términos de la consulta. No incluir accesorios, combos, kits, packs, boxes ni mates vendidos con bombilla, termo u otros accesorios. La base y la virola que forman parte del mate no se consideran combos.
 6. Sólo se muestran ofertas con disponibilidad InStock. Se examinan todas las ofertas/variantes; se descartan OutOfStock, agotadas o sin disponibilidad declarada. Se admiten precios numéricos y priceSpecification.
 7. Los resultados se deduplican por dominio y ruta de producto, conservando un enlace original, y se ordenan con los que tienen precio primero. No recortar resultados a 20 por tienda.
 8. El endpoint devuelve cobertura y problemas por tienda. Una petición exitosa no implica que se haya podido terminar la revisión del catálogo.
@@ -79,7 +79,7 @@ Mantener ignorados node_modules/, .next/, .vercel/, dist/, .wrangler/, .sites-ru
 
 ## Criterios de producto y UX
 
-- La interfaz debe estar en español rioplatense, ser legible en móvil y escritorio y conservar el enfoque principal: comparar mates.
+- La interfaz debe estar en español rioplatense, ser legible en móvil y escritorio y conservar el enfoque principal: buscar y comparar mates. Debe ofrecer tanto tipos frecuentes como búsqueda libre.
 - Mostrar claramente que precios y stock pertenecen a cada tienda y pueden cambiar.
 - No presentar resultados estáticos como si fueran actuales.
 - No agregar pagos, carrito, cuentas de usuario, almacenamiento o automatizaciones sin una solicitud explícita.
