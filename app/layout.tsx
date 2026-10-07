@@ -1,13 +1,24 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Mate Finder | Mates tipo torpedo",
-  description: "Buscador de mates tipo torpedo de todos los materiales en tiendas argentinas.",
+  title: "Mate Finder | Mates en un solo lugar",
+  description: "Buscá, compará y guardá mates de tiendas argentinas.",
+  applicationName: "Mate Finder",
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
+    apple: "/apple-touch-icon.png",
   },
+  appleWebApp: { capable: true, title: "Mate Finder", statusBarStyle: "black-translucent" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#173b2e",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
