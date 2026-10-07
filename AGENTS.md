@@ -8,7 +8,7 @@ Esta aplicación busca **mates individuales** en tiendas argentinas, sin combos,
 
 - El proyecto vive directamente en la raíz de este repositorio.
 - El objetivo de despliegue es **Vercel mediante GitHub**, no ChatGPT Sites.
-- No hay base de datos, autenticación, claves API ni variables de entorno requeridas.
+- La app usa Supabase Auth y una tabla protegida por RLS para sincronizar las marcas personales. Requiere las variables públicas de Supabase configuradas en Vercel y en `.env.local` para desarrollo.
 - La aplicación compila con npm run build.
 - El sitio anteriormente se publicó con ChatGPT Sites, pero la configuración de hosting de ese servicio fue removida. No reintroducir .openai/hosting.json ni flujos de Cloudflare/Sites para desplegar.
 
@@ -80,6 +80,7 @@ Mantener ignorados node_modules/, .next/, .vercel/, dist/, .wrangler/, .sites-ru
 ## Criterios de producto y UX
 
 - La interfaz debe estar en español rioplatense, ser legible en móvil y escritorio y conservar el enfoque principal: buscar y comparar mates. Debe ofrecer tanto tipos frecuentes como búsqueda libre.
+- La aplicación es **mobile-first**. Salvo una indicación explícita en contrario, cada funcionalidad y decisión de diseño debe priorizar Android/iOS: interacción táctil, pantallas angostas, rendimiento móvil y la experiencia PWA instalable. El diseño de escritorio debe adaptarse a esa base.
 - Mostrar claramente que precios y stock pertenecen a cada tienda y pueden cambiar.
 - No presentar resultados estáticos como si fueran actuales.
 - No agregar pagos, carrito, cuentas de usuario, almacenamiento o automatizaciones sin una solicitud explícita.

@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { ExternalLink, Heart, ImageOff, LoaderCircle, LogIn, LogOut, RefreshCw, Search, Store, ThumbsDown, ThumbsUp, UserRound } from "lucide-react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { ExternalLink, Grid2X2, Heart, ImageOff, LayoutGrid, List, LoaderCircle, LogIn, LogOut, RefreshCw, Search, Store, ThumbsDown, ThumbsUp, UserRound } from "lucide-react";
 import type { Product, SourceReport } from "@/lib/mate-scraper";
 import { createClient } from "@/lib/supabase/client";
 import { InstallAppButton } from "@/components/install-app-button";
@@ -11,6 +11,7 @@ type SearchResponse = { query: string; products: Product[]; sources: SourceRepor
 type MateMark = "liked" | "disliked";
 type MarkFilter = "considering" | "liked" | "disliked" | "unmarked" | "all";
 type PriceOrder = "featured" | "lowest" | "highest";
+type ViewMode = "list" | "grid" | "compact";
 type ProductMarkRow = { product_url: string; mark: MateMark };
 
 const MARKS_STORAGE_KEY = "mate-finder-marks-v1";
@@ -31,20 +32,24 @@ function numericPrice(product: Product) {
   return Number.isFinite(n) ? n : undefined;
 }
 
-function ProductPrice({ product }: { product: Product }) {
+function matchesMarkFilter(markFilter: MarkFilter, mark?: MateMark) {
+  return markFilter === "all" || (markFilter === "considering" ? mark !== "disliked" : markFilter === "unmarked" ? !mark : mark === markFilter);
+}
+
+function ProductPrice({ product, compact = false }: { product: Product; compact?: boolean }) {
   return <div>
     {product.transferPrice ? <>
-      <p className="text-xs font-medium text-[#4b745c]">{product.priceFrom ? "Desde · " : ""}Con transferencia</p>
-      <p className="text-xl font-semibold text-[#243b2e]">{formatPrice(product, product.transferPrice)}</p>
-      <p className="mt-1 text-xs text-[#637168]">Precio habitual: {formatPrice(product)}</p>
-    </> : <p className="text-lg font-semibold text-[#243b2e]">{product.priceFrom ? "Desde " : ""}{formatPrice(product)}</p>}
+      <p className="text-xs font-medium text-[#4b745c]">{product.priceFrom ? "Desde · " : ""}{compact ? "Transferencia" : "Con transferencia"}</p>
+      <p className={`${compact ? "text-base" : "text-xl"} font-semibold text-[#243b2e]`}>{formatPrice(product, product.transferPrice)}</p>
+      {!compact && <p className="mt-1 text-xs text-[#637168]">Precio habitual: {formatPrice(product)}</p>}
+    </> : <p className={`${compact ? "text-base" : "text-lg"} font-semibold text-[#243b2e]`}>{product.priceFrom ? "Desde " : ""}{formatPrice(product)}</p>}
   </div>;
 }
 
-function MarkButtons({ mark, onMark }: { mark?: MateMark; onMark: (mark?: MateMark) => void }) {
+function MarkButtons({ mark, onMark, compact = false }: { mark?: MateMark; onMark: (mark?: MateMark) => void; compact?: boolean }) {
   return <div className="flex items-center gap-1" aria-label="Marcar este mate">
-    <button type="button" onClick={() => onMark(mark === "liked" ? undefined : "liked")} aria-label="Me gusta" aria-pressed={mark === "liked"} className={`grid h-9 w-9 place-items-center rounded-full border transition ${mark === "liked" ? "border-[#bb7040] bg-[#f9e4d4] text-[#9a4d20]" : "border-[#d7cbb9] bg-white text-[#7b8179] hover:border-[#bb7040] hover:text-[#9a4d20]"}`}><ThumbsUp size={16} /></button>
-    <button type="button" onClick={() => onMark(mark === "disliked" ? undefined : "disliked")} aria-label="No me gusta" aria-pressed={mark === "disliked"} className={`grid h-9 w-9 place-items-center rounded-full border transition ${mark === "disliked" ? "border-[#7b8179] bg-[#e9e6e0] text-[#354039]" : "border-[#d7cbb9] bg-white text-[#7b8179] hover:border-[#7b8179] hover:text-[#354039]"}`}><ThumbsDown size={16} /></button>
+    <button type="button" onClick={() => onMark(mark === "liked" ? undefined : "liked")} aria-label="Me gusta" aria-pressed={mark === "liked"} className={`grid ${compact ? "h-8 w-8" : "h-10 w-10"} place-items-center rounded-full border transition ${mark === "liked" ? "border-[#bb7040] bg-[#f9e4d4] text-[#9a4d20]" : "border-[#d7cbb9] bg-white text-[#7b8179] hover:border-[#bb7040] hover:text-[#9a4d20]"}`}><ThumbsUp size={compact ? 14 : 16} /></button>
+    <button type="button" onClick={() => onMark(mark === "disliked" ? undefined : "disliked")} aria-label="No me gusta" aria-pressed={mark === "disliked"} className={`grid ${compact ? "h-8 w-8" : "h-10 w-10"} place-items-center rounded-full border transition ${mark === "disliked" ? "border-[#7b8179] bg-[#e9e6e0] text-[#354039]" : "border-[#d7cbb9] bg-white text-[#7b8179] hover:border-[#7b8179] hover:text-[#354039]"}`}><ThumbsDown size={compact ? 14 : 16} /></button>
   </div>;
 }
 
@@ -68,6 +73,9 @@ export default function Home() {
   const [password, setPassword] = useState("");
   const [authMessage, setAuthMessage] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const productRefs = useRef<Record<string, HTMLElement | null>>({});
+  const nextVisibleProductRef = useRef<string | null>(null);
 
   const search = useCallback(async (term: string) => {
     const query = term.trim() || "torpedo";
@@ -129,23 +137,6 @@ export default function Home() {
     return () => subscription.unsubscribe();
   }, [mergeRemoteMarks]);
 
-  const setMark = useCallback((product: Product, mark?: MateMark) => {
-    setMarks((current) => {
-      const next = { ...current };
-      if (mark) next[product.url] = mark;
-      else delete next[product.url];
-      return next;
-    });
-    if (!user) return;
-    const supabase = createClient();
-    const request = mark
-      ? supabase.from("product_marks").upsert({ user_id: user.id, product_url: product.url, mark }, { onConflict: "user_id,product_url" })
-      : supabase.from("product_marks").delete().eq("product_url", product.url);
-    void request.then(({ error }) => {
-      if (error) setAuthMessage("No pudimos guardar tu marca. Revisá tu conexión e intentá otra vez.");
-    });
-  }, [user]);
-
   const submitAuth = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setAuthLoading(true);
@@ -174,7 +165,7 @@ export default function Home() {
     const filtered = (data?.products ?? []).filter((product) => {
       const mark = marks[product.url];
       const price = numericPrice(product);
-      const hasDesiredMark = markFilter === "all" || (markFilter === "considering" ? mark !== "disliked" : markFilter === "unmarked" ? !mark : mark === markFilter);
+      const hasDesiredMark = matchesMarkFilter(markFilter, mark);
       return (!onlyWithPrice || price !== undefined)
         && (store === "Todas las tiendas" || product.store === store)
         && (!minimumPrice || (price !== undefined && price >= min))
@@ -188,6 +179,42 @@ export default function Home() {
       return priceOrder === "lowest" ? first - second : second - first;
     });
   }, [data, marks, markFilter, maximumPrice, minimumPrice, onlyWithPrice, priceOrder, store]);
+
+  useLayoutEffect(() => {
+    const nextProductUrl = nextVisibleProductRef.current;
+    if (!nextProductUrl) return;
+    const nextProduct = productRefs.current[nextProductUrl];
+    if (nextProduct) nextProduct.scrollIntoView({ block: "start", behavior: "auto" });
+    nextVisibleProductRef.current = null;
+  }, [products]);
+
+  const setMark = useCallback((product: Product, mark?: MateMark) => {
+    if (!matchesMarkFilter(markFilter, mark)) {
+      const productIndex = products.findIndex((item) => item.url === product.url);
+      nextVisibleProductRef.current = products[productIndex + 1]?.url ?? products[productIndex - 1]?.url ?? null;
+    }
+    setMarks((current) => {
+      const next = { ...current };
+      if (mark) next[product.url] = mark;
+      else delete next[product.url];
+      return next;
+    });
+    if (!user) return;
+    const supabase = createClient();
+    const request = mark
+      ? supabase.from("product_marks").upsert({ user_id: user.id, product_url: product.url, mark }, { onConflict: "user_id,product_url" })
+      : supabase.from("product_marks").delete().eq("product_url", product.url);
+    void request.then(({ error }) => {
+      if (error) setAuthMessage("No pudimos guardar tu marca. Revisá tu conexión e intentá otra vez.");
+    });
+  }, [markFilter, products, user]);
+
+  const compactCards = viewMode !== "list";
+  const productGridClass = viewMode === "list"
+    ? "grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
+    : viewMode === "grid"
+      ? "grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4"
+      : "grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5";
 
   return <main className="min-h-screen bg-[#f6f2eb] text-[#18271f]">
     <header className="border-b border-[#d7cbb9] bg-[#173b2e] text-white"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
@@ -210,6 +237,7 @@ export default function Home() {
           <label className="grid gap-1 text-xs font-medium text-[#566258]"><span>Mis marcas</span><select aria-label="Filtrar por mis marcas" value={markFilter} onChange={(event) => setMarkFilter(event.target.value as MarkFilter)} className="h-11 rounded-xl border border-[#d7cbb9] bg-white px-3 text-sm font-normal text-[#18271f] outline-none focus:ring-2 focus:ring-[#a97b3d]"><option value="considering">Me gustan o sin marcar</option><option value="liked">Me gustan</option><option value="disliked">No me gustan</option><option value="unmarked">Sin marcar</option><option value="all">Todos</option></select></label>
         </div>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 px-1 text-xs text-[#637168]"><label className="flex cursor-pointer items-center gap-2"><input type="checkbox" checked={onlyWithPrice} onChange={(event) => setOnlyWithPrice(event.target.checked)} className="h-4 w-4 accent-[#234c3b]" /> Sólo con precio</label>{user ? <span>Tus marcas se sincronizan con tu cuenta.</span> : <button type="button" onClick={() => { setAuthMode("signup"); setAuthMessage(""); setAuthOpen(true); }} className="underline underline-offset-4 hover:text-[#243b2e]">Creá una cuenta para sincronizar tus marcas.</button>}</div>
+        <div className="mt-4 flex items-center justify-between gap-3 border-t border-[#e2d8c9] px-1 pt-3"><span className="text-xs font-medium text-[#566258]">Cómo ver los mates</span><div className="inline-flex rounded-xl border border-[#d7cbb9] bg-white p-1" role="group" aria-label="Elegir visualización"><button type="button" onClick={() => setViewMode("list")} aria-pressed={viewMode === "list"} className={`inline-flex h-9 items-center gap-1 rounded-lg px-2 text-xs font-medium transition ${viewMode === "list" ? "bg-[#234c3b] text-white" : "text-[#566258] hover:bg-[#f4efe6]"}`}><List size={16} /><span className="hidden sm:inline">Lista</span></button><button type="button" onClick={() => setViewMode("grid")} aria-pressed={viewMode === "grid"} className={`inline-flex h-9 items-center gap-1 rounded-lg px-2 text-xs font-medium transition ${viewMode === "grid" ? "bg-[#234c3b] text-white" : "text-[#566258] hover:bg-[#f4efe6]"}`}><Grid2X2 size={16} /><span className="hidden sm:inline">Cuadrícula</span></button><button type="button" onClick={() => setViewMode("compact")} aria-pressed={viewMode === "compact"} className={`inline-flex h-9 items-center gap-1 rounded-lg px-2 text-xs font-medium transition ${viewMode === "compact" ? "bg-[#234c3b] text-white" : "text-[#566258] hover:bg-[#f4efe6]"}`}><LayoutGrid size={16} /><span className="hidden sm:inline">Compacta</span></button></div></div>
       </div>
       {authMessage && <p role="status" className="mt-4 rounded-xl border border-[#cfad75] bg-[#fff7e8] px-4 py-3 text-sm text-[#754c1e]">{authMessage}</p>}
       {authOpen && <div className="mt-5 rounded-2xl border border-[#d7cbb9] bg-[#fffdf9] p-5 shadow-sm"><div className="flex items-start justify-between gap-4"><div><h3 className="font-serif text-2xl">{authMode === "login" ? "Ingresá a tu cuenta" : "Creá tu cuenta"}</h3><p className="mt-1 text-sm text-[#637168]">Así vas a poder ver tus me gusta desde cualquier dispositivo.</p></div><button type="button" onClick={() => setAuthOpen(false)} className="text-sm underline underline-offset-4">Cerrar</button></div><form onSubmit={submitAuth} className="mt-4 grid max-w-md gap-3"><label className="grid gap-1 text-sm font-medium text-[#566258]">Email<input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-11 rounded-xl border border-[#d7cbb9] bg-white px-3 font-normal text-[#18271f] outline-none focus:ring-2 focus:ring-[#a97b3d]" /></label><label className="grid gap-1 text-sm font-medium text-[#566258]">Contraseña<input required minLength={6} type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="h-11 rounded-xl border border-[#d7cbb9] bg-white px-3 font-normal text-[#18271f] outline-none focus:ring-2 focus:ring-[#a97b3d]" /></label><div className="flex flex-wrap items-center gap-4"><button disabled={authLoading} className="rounded-xl bg-[#234c3b] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#173b2e] disabled:opacity-60">{authLoading ? "Un momento…" : authMode === "login" ? "Ingresar" : "Crear cuenta"}</button><button type="button" onClick={() => { setAuthMode((current) => current === "login" ? "signup" : "login"); setAuthMessage(""); }} className="text-sm font-medium text-[#8a5a20] underline underline-offset-4">{authMode === "login" ? "Quiero crear una cuenta" : "Ya tengo una cuenta"}</button></div></form></div>}
@@ -219,7 +247,7 @@ export default function Home() {
         {!data.sources.length && <p role="alert" className="mt-3 text-[#8a5a20]">{data.errors.join(" ")}</p>}
         <ul className="mt-4 grid gap-3 sm:grid-cols-2">{data.sources.map((source) => <li key={source.store} className="rounded-xl bg-[#f4efe6] p-3"><div className="flex flex-wrap justify-between gap-2"><a href={source.url} target="_blank" rel="noreferrer" className="font-medium underline underline-offset-4">{source.store}</a><span>{source.products} mates en stock</span></div><p className="mt-1 text-xs text-[#637168]">{source.status === "complete" ? "Búsqueda completa" : source.status === "partial" ? "Búsqueda parcial" : "No se pudo consultar"} · {source.pages} páginas · {source.inspectedProducts} publicaciones revisadas</p>{source.issues.length > 0 && <p className="mt-2 text-xs text-[#8a5a20]">{source.issues.join(" · ")}</p>}</li>)}</ul>
       </details>}
-      {loading ? <div className="grid min-h-[320px] place-items-center"><div className="text-center"><LoaderCircle className="mx-auto animate-spin text-[#956a31]" size={31} /><p className="mt-3 text-sm text-[#637168]">Revisando tiendas y disponibilidad…</p></div></div> : products.length ? <div className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{products.map((product) => <article key={`${product.store}-${product.url}`} className="group overflow-hidden rounded-2xl border border-[#d7cbb9] bg-[#fffdf9] shadow-[0_2px_0_rgba(23,59,46,0.04)] transition hover:-translate-y-0.5 hover:shadow-md"><div className="aspect-[4/3] bg-[#e9e1d3]">{product.image ? <img src={product.image} alt="" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]" /> : <div className="grid h-full place-items-center text-[#968c7d]"><ImageOff size={26} /></div>}</div><div className="p-5"><div className="mb-3 flex items-center justify-between gap-3"><span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-[#4b745c]"><Store size={13} />{product.store}</span><MarkButtons mark={marks[product.url]} onMark={(mark) => setMark(product, mark)} /></div><h3 className="min-h-12 font-serif text-xl leading-6">{product.name}</h3><div className="mt-4 flex items-end justify-between gap-3"><ProductPrice product={product} /><a href={product.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#8a5a20] underline decoration-[#cfad75] underline-offset-4">Ver tienda <ExternalLink size={14} /></a></div></div></article>)}</div> : <div className="mt-8 rounded-2xl border border-dashed border-[#cabba6] bg-[#fffdf9] px-6 py-16 text-center"><Heart className="mx-auto text-[#956a31]" size={27} /><p className="mt-3 font-serif text-2xl">No hay mates con estos filtros.</p><p className="mt-2 text-sm text-[#637168]">Probá cambiar el precio, la tienda o tus marcas.</p></div>}
+      {loading ? <div className="grid min-h-[320px] place-items-center"><div className="text-center"><LoaderCircle className="mx-auto animate-spin text-[#956a31]" size={31} /><p className="mt-3 text-sm text-[#637168]">Revisando tiendas y disponibilidad…</p></div></div> : products.length ? <div className={`mt-8 ${productGridClass}`}>{products.map((product) => <article key={`${product.store}-${product.url}`} ref={(node) => { productRefs.current[product.url] = node; }} className={`group overflow-hidden rounded-2xl border border-[#d7cbb9] bg-[#fffdf9] shadow-[0_2px_0_rgba(23,59,46,0.04)] transition hover:-translate-y-0.5 hover:shadow-md ${compactCards ? "" : ""}`}><div className={`${compactCards ? "aspect-square" : "aspect-[4/3]"} bg-[#e9e1d3]`}>{product.image ? <img src={product.image} alt="" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]" /> : <div className="grid h-full place-items-center text-[#968c7d]"><ImageOff size={compactCards ? 20 : 26} /></div>}</div><div className={compactCards ? "p-3" : "p-5"}><div className={`flex items-center justify-between gap-2 ${compactCards ? "mb-2" : "mb-3"}`}><span className="min-w-0 truncate text-xs font-semibold uppercase tracking-wide text-[#4b745c]"><Store size={13} className="mr-1 inline" />{product.store}</span><MarkButtons compact={compactCards} mark={marks[product.url]} onMark={(mark) => setMark(product, mark)} /></div><h3 className={`${compactCards ? "min-h-10 text-base leading-5" : "min-h-12 text-xl leading-6"} font-serif`}>{product.name}</h3><div className={`flex ${compactCards ? "mt-3 flex-col items-start gap-2" : "mt-4 items-end justify-between gap-3"}`}><ProductPrice product={product} compact={compactCards} /><a href={product.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#8a5a20] underline decoration-[#cfad75] underline-offset-4">{compactCards ? "Ver" : "Ver tienda"} <ExternalLink size={14} /></a></div></div></article>)}</div> : <div className="mt-8 rounded-2xl border border-dashed border-[#cabba6] bg-[#fffdf9] px-6 py-16 text-center"><Heart className="mx-auto text-[#956a31]" size={27} /><p className="mt-3 font-serif text-2xl">No hay mates con estos filtros.</p><p className="mt-2 text-sm text-[#637168]">Probá cambiar el precio, la tienda o tus marcas.</p></div>}
       <footer className="mt-10 flex flex-col gap-2 border-t border-[#d7cbb9] pt-5 text-xs text-[#687269] sm:flex-row sm:items-center sm:justify-between"><span>{data?.checkedSources ?? 0} tiendas consultadas{data?.updatedAt ? ` · actualizado ${new Intl.DateTimeFormat("es-AR", { hour: "2-digit", minute: "2-digit" }).format(new Date(data.updatedAt))}` : ""}</span><span>Precios y stock sujetos a cambios en la tienda.</span></footer>
     </section>
   </main>;
