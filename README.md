@@ -64,3 +64,8 @@ Cada `git push` a `main` generará un deployment de producción. Las ramas y pul
 - Cada petición tiene un límite de 12 segundos. La búsqueda tiene un presupuesto global de cuatro minutos y la función de Vercel declara `maxDuration = 300`. Si el plan de hosting impone un límite menor, debe ajustarse el presupuesto o distribuirse la búsqueda entre solicitudes.
 - No hay recorte de 20 resultados por tienda. El límite de seguridad de 100 páginas por fuente y los límites de tiempo siempre se informan como cobertura incompleta.
 - Las tiendas pueden cambiar su HTML, su disponibilidad o bloquear las consultas. Los errores se atribuyen a la tienda correspondiente y se conservan los resultados obtenidos antes del fallo.
+# Mate Finder
+
+## Cuentas y marcas guardadas
+
+La aplicación usa Supabase Auth para que cada persona pueda crear una cuenta y sincronizar sus marcas de “me gusta” y “no me gusta”. Para desarrollar localmente, copiá `.env.example` a `.env.local` y completá ambas variables con los valores del proyecto de Supabase. Las variables públicas no contienen acceso administrativo: la tabla se protege con políticas RLS por usuario.

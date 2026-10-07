@@ -1,13 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ExternalLink, Heart, ImageOff, LoaderCircle, RefreshCw, Search, Store, ThumbsDown, ThumbsUp } from "lucide-react";
+import { ExternalLink, Heart, ImageOff, LoaderCircle, LogIn, LogOut, RefreshCw, Search, Store, ThumbsDown, ThumbsUp, UserRound } from "lucide-react";
 import type { Product, SourceReport } from "@/lib/mate-scraper";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 type SearchResponse = { query: string; products: Product[]; sources: SourceReport[]; totalSources: number; checkedSources: number; completeSources: number; errors: string[]; updatedAt: string };
 type MateMark = "liked" | "disliked";
 type MarkFilter = "considering" | "liked" | "disliked" | "unmarked" | "all";
 type PriceOrder = "featured" | "lowest" | "highest";
+type ProductMarkRow = { product_url: string; mark: MateMark };
 
 const MARKS_STORAGE_KEY = "mate-finder-marks-v1";
 const MATE_TYPES = ["torpedo", "camionero", "imperial", "criollo", "uruguayo", "perita", "galleta"];
@@ -57,6 +60,13 @@ export default function Home() {
   const [markFilter, setMarkFilter] = useState<MarkFilter>("considering");
   const [marks, setMarks] = useState<Record<string, MateMark>>({});
   const [marksLoaded, setMarksLoaded] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authMessage, setAuthMessage] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
 
   const search = useCallback(async (term: string) => {
     const query = term.trim() || "torpedo";
@@ -87,6 +97,37 @@ export default function Home() {
     if (marksLoaded) window.localStorage.setItem(MARKS_STORAGE_KEY, JSON.stringify(marks));
   }, [marks, marksLoaded]);
 
+  const mergeRemoteMarks = useCallback(async (activeUser: User) => {
+    const supabase = createClient();
+    const { data, error } = await supabase.from("product_marks").select("product_url, mark");
+    if (error) {
+      setAuthMessage("No pudimos cargar tus marcas guardadas. Probá de nuevo.");
+      return;
+    }
+
+    const saved = Object.fromEntries((data as ProductMarkRow[]).map(({ product_url, mark }) => [product_url, mark]));
+    setMarks((local) => {
+      const merged = { ...saved, ...local };
+      const localRows = Object.entries(local).map(([product_url, mark]) => ({ user_id: activeUser.id, product_url, mark }));
+      if (localRows.length) void supabase.from("product_marks").upsert(localRows, { onConflict: "user_id,product_url" });
+      return merged;
+    });
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    void supabase.auth.getUser().then(({ data: { user: activeUser } }) => {
+      setUser(activeUser);
+      if (activeUser) void mergeRemoteMarks(activeUser);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const activeUser = session?.user ?? null;
+      setUser(activeUser);
+      if (activeUser) void mergeRemoteMarks(activeUser);
+    });
+    return () => subscription.unsubscribe();
+  }, [mergeRemoteMarks]);
+
   const setMark = useCallback((product: Product, mark?: MateMark) => {
     setMarks((current) => {
       const next = { ...current };
@@ -94,6 +135,35 @@ export default function Home() {
       else delete next[product.url];
       return next;
     });
+    if (!user) return;
+    const supabase = createClient();
+    const request = mark
+      ? supabase.from("product_marks").upsert({ user_id: user.id, product_url: product.url, mark }, { onConflict: "user_id,product_url" })
+      : supabase.from("product_marks").delete().eq("product_url", product.url);
+    void request.then(({ error }) => {
+      if (error) setAuthMessage("No pudimos guardar tu marca. Revisá tu conexión e intentá otra vez.");
+    });
+  }, [user]);
+
+  const submitAuth = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setAuthLoading(true);
+    setAuthMessage("");
+    const supabase = createClient();
+    const credentials = { email: email.trim(), password };
+    const { data, error } = authMode === "login"
+      ? await supabase.auth.signInWithPassword(credentials)
+      : await supabase.auth.signUp(credentials);
+    if (error) setAuthMessage(error.message);
+    else if (data.user && authMode === "signup" && !data.session) setAuthMessage("Te enviamos un correo para confirmar tu cuenta. Después iniciá sesión.");
+    else { setAuthOpen(false); setPassword(""); }
+    setAuthLoading(false);
+  }, [authMode, email, password]);
+
+  const signOut = useCallback(async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUser(null);
   }, []);
 
   const stores = useMemo(() => ["Todas las tiendas", ...(data?.sources.map((item) => item.store) ?? []).sort()], [data]);
@@ -121,7 +191,7 @@ export default function Home() {
   return <main className="min-h-screen bg-[#f6f2eb] text-[#18271f]">
     <header className="border-b border-[#d7cbb9] bg-[#173b2e] text-white"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
       <div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-full border border-[#d8ab63] bg-[#234c3b] font-serif text-xl text-[#f4cd8b]">M</span><div><h1 className="font-serif text-xl leading-none">Mate Finder</h1><p className="mt-1 text-xs tracking-wide text-[#cad8cf]">BUSCADOR DE MATES</p></div></div>
-      <button onClick={() => { setLoading(true); void search(searchTerm); }} disabled={loading} className="inline-flex items-center gap-2 rounded-full border border-[#6d947f] px-4 py-2 text-sm font-medium transition hover:bg-[#285542] disabled:opacity-60"><RefreshCw size={16} className={loading ? "animate-spin" : ""} />Actualizar</button>
+      <div className="flex items-center gap-2"><button onClick={() => { setLoading(true); void search(searchTerm); }} disabled={loading} className="inline-flex items-center gap-2 rounded-full border border-[#6d947f] px-4 py-2 text-sm font-medium transition hover:bg-[#285542] disabled:opacity-60"><RefreshCw size={16} className={loading ? "animate-spin" : ""} />Actualizar</button>{user ? <button type="button" onClick={() => void signOut()} title="Cerrar sesión" className="inline-flex items-center gap-2 rounded-full border border-[#6d947f] px-3 py-2 text-sm font-medium transition hover:bg-[#285542]"><UserRound size={16} /><span className="hidden max-w-36 truncate sm:inline">{user.email}</span><LogOut size={15} /></button> : <button type="button" onClick={() => { setAuthMode("login"); setAuthMessage(""); setAuthOpen(true); }} className="inline-flex items-center gap-2 rounded-full border border-[#6d947f] px-3 py-2 text-sm font-medium transition hover:bg-[#285542]"><LogIn size={16} /><span className="hidden sm:inline">Ingresar</span></button>}</div>
     </div></header>
     <section className="mx-auto max-w-7xl px-5 pb-12 pt-9 sm:px-8">
       <div className="grid gap-7 lg:grid-cols-[1fr_auto] lg:items-end"><div><p className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#956a31]">Búsqueda activa</p><h2 className="max-w-3xl font-serif text-4xl leading-[1.03] tracking-tight sm:text-6xl">Mates, en un solo lugar.</h2><p className="mt-4 max-w-2xl text-base leading-7 text-[#536158]">Buscá por tipo, nombre o material; después filtrá por precio, tienda y tus marcas.</p></div><div className="rounded-2xl border border-[#d7cbb9] bg-[#fffdf9] px-5 py-4 shadow-sm"><p className="text-3xl font-semibold tabular-nums">{loading ? "—" : products.length}</p><p className="text-sm text-[#637168]">mates según tus filtros</p></div></div>
@@ -138,8 +208,10 @@ export default function Home() {
           <label className="grid gap-1 text-xs font-medium text-[#566258]"><span>Ordenar por precio</span><select aria-label="Ordenar por precio" value={priceOrder} onChange={(event) => setPriceOrder(event.target.value as PriceOrder)} className="h-11 rounded-xl border border-[#d7cbb9] bg-white px-3 text-sm font-normal text-[#18271f] outline-none focus:ring-2 focus:ring-[#a97b3d]"><option value="featured">Como aparecen</option><option value="lowest">Más baratos</option><option value="highest">Más caros</option></select></label>
           <label className="grid gap-1 text-xs font-medium text-[#566258]"><span>Mis marcas</span><select aria-label="Filtrar por mis marcas" value={markFilter} onChange={(event) => setMarkFilter(event.target.value as MarkFilter)} className="h-11 rounded-xl border border-[#d7cbb9] bg-white px-3 text-sm font-normal text-[#18271f] outline-none focus:ring-2 focus:ring-[#a97b3d]"><option value="considering">Me gustan o sin marcar</option><option value="liked">Me gustan</option><option value="disliked">No me gustan</option><option value="unmarked">Sin marcar</option><option value="all">Todos</option></select></label>
         </div>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 px-1 text-xs text-[#637168]"><label className="flex cursor-pointer items-center gap-2"><input type="checkbox" checked={onlyWithPrice} onChange={(event) => setOnlyWithPrice(event.target.checked)} className="h-4 w-4 accent-[#234c3b]" /> Sólo con precio</label><span>Tus marcas se guardan sólo en este navegador.</span></div>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 px-1 text-xs text-[#637168]"><label className="flex cursor-pointer items-center gap-2"><input type="checkbox" checked={onlyWithPrice} onChange={(event) => setOnlyWithPrice(event.target.checked)} className="h-4 w-4 accent-[#234c3b]" /> Sólo con precio</label>{user ? <span>Tus marcas se sincronizan con tu cuenta.</span> : <button type="button" onClick={() => { setAuthMode("signup"); setAuthMessage(""); setAuthOpen(true); }} className="underline underline-offset-4 hover:text-[#243b2e]">Creá una cuenta para sincronizar tus marcas.</button>}</div>
       </div>
+      {authMessage && <p role="status" className="mt-4 rounded-xl border border-[#cfad75] bg-[#fff7e8] px-4 py-3 text-sm text-[#754c1e]">{authMessage}</p>}
+      {authOpen && <div className="mt-5 rounded-2xl border border-[#d7cbb9] bg-[#fffdf9] p-5 shadow-sm"><div className="flex items-start justify-between gap-4"><div><h3 className="font-serif text-2xl">{authMode === "login" ? "Ingresá a tu cuenta" : "Creá tu cuenta"}</h3><p className="mt-1 text-sm text-[#637168]">Así vas a poder ver tus me gusta desde cualquier dispositivo.</p></div><button type="button" onClick={() => setAuthOpen(false)} className="text-sm underline underline-offset-4">Cerrar</button></div><form onSubmit={submitAuth} className="mt-4 grid max-w-md gap-3"><label className="grid gap-1 text-sm font-medium text-[#566258]">Email<input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-11 rounded-xl border border-[#d7cbb9] bg-white px-3 font-normal text-[#18271f] outline-none focus:ring-2 focus:ring-[#a97b3d]" /></label><label className="grid gap-1 text-sm font-medium text-[#566258]">Contraseña<input required minLength={6} type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="h-11 rounded-xl border border-[#d7cbb9] bg-white px-3 font-normal text-[#18271f] outline-none focus:ring-2 focus:ring-[#a97b3d]" /></label><div className="flex flex-wrap items-center gap-4"><button disabled={authLoading} className="rounded-xl bg-[#234c3b] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#173b2e] disabled:opacity-60">{authLoading ? "Un momento…" : authMode === "login" ? "Ingresar" : "Crear cuenta"}</button><button type="button" onClick={() => { setAuthMode((current) => current === "login" ? "signup" : "login"); setAuthMessage(""); }} className="text-sm font-medium text-[#8a5a20] underline underline-offset-4">{authMode === "login" ? "Quiero crear una cuenta" : "Ya tengo una cuenta"}</button></div></form></div>}
       {!loading && data && <details className="mt-5 rounded-2xl border border-[#d7cbb9] bg-[#fffdf9] p-4 text-sm">
         <summary className="cursor-pointer font-medium">{data.completeSources} de {data.totalSources} tiendas con búsqueda completa · ver detalle</summary>
         <p className="mt-3 text-[#637168]">{data.errors.length ? `La búsqueda de “${data.query}” quedó incompleta en algunas tiendas; puede haber más mates disponibles.` : "Se recorrieron las páginas que las tiendas permitieron consultar."} Los productos agotados o sin stock verificable no aparecen.</p>

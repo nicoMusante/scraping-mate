@@ -84,3 +84,13 @@ Mantener ignorados node_modules/, .next/, .vercel/, dist/, .wrangler/, .sites-ru
 - No presentar resultados estáticos como si fueran actuales.
 - No agregar pagos, carrito, cuentas de usuario, almacenamiento o automatizaciones sin una solicitud explícita.
 - Las marcas “me gusta” y “no me gusta” se guardan en `localStorage` del navegador. Por defecto se muestran las marcadas como me gusta y las que todavía no tienen marca. No requieren base de datos, pero no se sincronizan entre dispositivos o navegadores y se pierden si la persona borra los datos del sitio. Para sincronización o cuentas, se necesitaría una base de datos y autenticación solicitadas explícitamente.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
