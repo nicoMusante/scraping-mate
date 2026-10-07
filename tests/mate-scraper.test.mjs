@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { extractRecords, inspect, isSingleMate, pricesFromHtml, productKey, productsFromRecords, withLimit } from "../lib/mate-scraper.ts";
+import { extractRecords, inspect, isSingleMate, pricesFromHtml, productKey, productsFromRecords, sourcesForQuery, withLimit } from "../lib/mate-scraper.ts";
 
 const source = { store: "Tienda de prueba", url: "https://tienda.example/search/?q=torpedo" };
 const product = (id, overrides = {}) => ({ "@type": "Product", name: `Mate Torpedo ${id}`, url: `/productos/torpedo-${id}/`,
@@ -47,6 +47,20 @@ test("sold-out, preorder, missing stock and accessories do not become available 
     product(5, { name: "Mate imperial", description: "También vendemos torpedos" }),
   ];
   assert.deepEqual(productsFromRecords(records, source), []);
+});
+
+test("search terms change store URLs and only retain individual matching mates", () => {
+  const queriedSources = sourcesForQuery("Imperial cuero");
+  assert.equal(new URL(queriedSources[0].url).searchParams.get("q"), "imperial cuero");
+  assert.equal(new URL(queriedSources.find((item) => item.store === "Estilo Austral").url).searchParams.get("s"), "imperial cuero");
+  const records = [
+    product(1, { name: "Mate Imperial Cuero Negro" }),
+    product(2, { name: "Mate Imperial de Acero" }),
+    product(3, { name: "Combo Mate Imperial Cuero y Bombilla" }),
+  ];
+  assert.equal(isSingleMate("Mate Imperial Cuero Negro", "", "imperial cuero"), true);
+  assert.equal(isSingleMate("Mate Torpedo Cuero", "", "imperial cuero"), false);
+  assert.deepEqual(productsFromRecords(records, source, "imperial cuero").map((item) => item.name), ["Mate Imperial Cuero Negro"]);
 });
 
 test("a paginated fragment without a load-more button still leads to page 3; no 20-product cap", async () => {

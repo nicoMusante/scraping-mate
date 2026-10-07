@@ -27,6 +27,26 @@ export const sources: Source[] = [
   { store: "Matermos", url: "https://www.matermos.com/search/?q=torpedo" },
 ];
 
+export function normalizeSearchQuery(value?: string | null): string {
+  const normalized = (value ?? "torpedo").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("es-AR").replace(/[^\p{L}\p{N}\s-]/gu, " ").replace(/\s+/g, " ").trim();
+  return (normalized || "torpedo").slice(0, 60);
+}
+
+function matchesSearch(value: string, query: string): boolean {
+  const haystack = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es-AR");
+  return normalizeSearchQuery(query).split(" ").every((term) => haystack.includes(term));
+}
+
+export function sourcesForQuery(query?: string | null): Source[] {
+  const term = normalizeSearchQuery(query);
+  return sources.map((source) => {
+    const url = new URL(source.url);
+    url.searchParams.set(url.searchParams.has("s") ? "s" : "q", term);
+    return { ...source, url: url.toString() };
+  });
+}
+
 type RecordValue = Record<string, unknown>;
 function object(value: unknown): RecordValue {
   return value && typeof value === "object" && !Array.isArray(value) ? value as RecordValue : {};
@@ -58,13 +78,13 @@ export function productKey(url: string): string {
 function isProductType(value: unknown): boolean {
   return list(value).some((type) => /^(?:https?:\/\/schema\.org\/)?Product$/i.test(scalar(type)));
 }
-export function isSingleMate(name: string, description = ""): boolean {
+export function isSingleMate(name: string, description = "", query = "torpedo"): boolean {
   const title = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const accessory = "(?:bombill\\w*|termos?|materas?|yerberas?)";
   const bundled = [...description.matchAll(new RegExp(`\\b(?:incluye|incluidos?|conjunto de|acompañado de)\\b[^.!\\n]{0,100}\\b${accessory}\\b`, "gi"))]
     .some((match) => !/\b(?:no(?:\s+se)?|sin)\s*$/i.test(description.slice(Math.max(0, match.index! - 16), match.index))
       && !new RegExp(`\\b(?:no|sin)\\s+(?:una?\\s+)?${accessory}\\b`, "i").test(match[0]));
-  return /\btorpedos?\b/i.test(title)
+  return matchesSearch(title, query)
     && !/^(?:bombilla|funda|soporte|virola|base)\b/i.test(title)
     && !/\b(?:combos?|kits?|sets?|packs?|box|bombill\w*|termos?|materas?|yerber\w*|azucarer\w*|canastas?)\b/i.test(title)
     && !/\bpico\s+(?:de\s+)?loro\b/i.test(title)
@@ -99,11 +119,11 @@ export function extractRecords(html: string): { records: RecordValue[]; malforme
   }
   return { records, malformed };
 }
-export function productsFromRecords(records: RecordValue[], source: Source): Product[] {
+export function productsFromRecords(records: RecordValue[], source: Source, query = "torpedo"): Product[] {
   const products: Product[] = [];
   for (const record of records) {
     const name = text(record.name);
-    if (!isSingleMate(name, text(record.description))) continue;
+    if (!isSingleMate(name, text(record.description), query)) continue;
     // A sold-out first variant must not hide another available variant.
     const offer = offers(record).find((item) => availability(item) === "instock");
     if (!offer) continue;
@@ -221,9 +241,9 @@ function links(html: string, base: string): Link[] {
   }
   return found;
 }
-function productLinks(pageLinks: Link[]): string[] {
+function productLinks(pageLinks: Link[], query: string): string[] {
   return [...new Set(pageLinks.filter((item) => /\/(?:productos?|product)\//i.test(new URL(item.url).pathname)
-    && /torpedo/i.test(`${new URL(item.url).pathname} ${item.label}`)).map((item) => item.url))];
+    && matchesSearch(`${new URL(item.url).pathname} ${item.label}`, query)).map((item) => item.url))];
 }
 function paginationLinks(pageLinks: Link[], base: string): string[] {
   const current = new URL(base);
@@ -260,7 +280,7 @@ async function loadPage(url: string): Promise<LoadedPage> {
   return { html, url: response.url || url };
 }
 
-export async function inspect(source: Source, load: LoadPage = loadPage, budgetMs = 240_000) {
+export async function inspect(source: Source, load: LoadPage = loadPage, budgetMs = 240_000, query = "torpedo") {
   const report: SourceReport = { ...source, status: "complete", pages: 0, inspectedProducts: 0, products: 0, issues: [] };
   const products = new Map<string, Product>();
   const inspected = new Set<string>();
@@ -283,15 +303,15 @@ export async function inspect(source: Source, load: LoadPage = loadPage, budgetM
       const parsed = extractRecords(html);
       if (parsed.malformed) issue("La tienda publicó datos de productos que no se pudieron leer.");
       const pageLinks = links(html, url);
-      const candidates = productLinks(pageLinks);
+      const candidates = productLinks(pageLinks, query);
       const previousCount = listing.inspected.size;
       for (const record of parsed.records) {
         const original = productUrl(record, url);
         if (original) { inspected.add(productKey(original)); listing.inspected.add(productKey(original)); }
-        else if (isSingleMate(text(record.name), text(record.description))) issue("Algunas publicaciones no informan el enlace original del producto.");
-        if (original && isSingleMate(text(record.name), text(record.description)) && !offers(record).some((offer) => availability(offer))) details.add(original);
+        else if (isSingleMate(text(record.name), text(record.description), query)) issue("Algunas publicaciones no informan el enlace original del producto.");
+        if (original && isSingleMate(text(record.name), text(record.description), query) && !offers(record).some((offer) => availability(offer))) details.add(original);
       }
-      for (const product of pricesFromHtml(html, productsFromRecords(parsed.records, { ...source, url }), url)) {
+      for (const product of pricesFromHtml(html, productsFromRecords(parsed.records, { ...source, url }, query), url)) {
         const previous = products.get(productKey(product.url));
         products.set(productKey(product.url), previous?.transferPrice && !product.transferPrice
           ? { ...product, price: previous.price, transferPrice: previous.transferPrice, priceFrom: previous.priceFrom }
@@ -303,10 +323,10 @@ export async function inspect(source: Source, load: LoadPage = loadPage, budgetM
         listing.inspected.add(productKey(candidate));
       }
       // Search indexes and category lists can differ. Compare both when the
-      // store links to a torpedo category, deduplicating the original products.
+      // store links to a matching mate category, deduplicating original products.
       for (const link of pageLinks) {
         const category = new URL(link.url);
-        if (!/\/(?:mates-)?torpedos?\/?$/i.test(category.pathname) || /\/(?:productos?|product)\//i.test(category.pathname)) continue;
+        if (!matchesSearch(`${category.pathname} ${link.label}`, query) || !/mates?/i.test(`${category.pathname} ${link.label}`) || /\/(?:productos?|product)\//i.test(category.pathname)) continue;
         category.search = ""; category.hash = "";
         const categoryUrl = category.toString();
         if (!listings.has(categoryUrl)) {
@@ -355,7 +375,7 @@ export async function inspect(source: Source, load: LoadPage = loadPage, budgetM
         issue("Algunas fichas no informan datos o disponibilidad verificable.");
       }
       const current = products.get(productKey(url));
-      const detailProducts = productsFromRecords(matching, { ...source, url: page.url });
+      const detailProducts = productsFromRecords(matching, { ...source, url: page.url }, query);
       if (matching.length && !detailProducts.length) products.delete(productKey(url));
       for (const product of pricesFromHtml(page.html, detailProducts.map((item) => ({ ...current, ...item })), page.url)) products.set(productKey(product.url), product);
     } catch (error) { issue(`Ficha de producto: ${error instanceof Error ? error.message : "consulta fallida"}`); }
@@ -366,14 +386,15 @@ export async function inspect(source: Source, load: LoadPage = loadPage, budgetM
   return { products: [...products.values()], report };
 }
 
-export async function searchSources(selected = sources) {
+export async function searchSources(query?: string | null, selected = sourcesForQuery(query)) {
+  const normalizedQuery = normalizeSearchQuery(query);
   const deadline = Date.now() + 240_000;
-  const results = await withLimit(selected, 3, (source) => inspect(source, undefined, Math.max(0, deadline - Date.now())));
+  const results = await withLimit(selected, 3, (source) => inspect(source, undefined, Math.max(0, deadline - Date.now()), normalizedQuery));
   const unique = new Map<string, Product>();
   for (const result of results) for (const product of result.products) unique.set(productKey(product.url), product);
   const products = [...unique.values()].sort((a, b) => Number(Boolean(b.price)) - Number(Boolean(a.price)) || a.store.localeCompare(b.store));
   const reports = results.map((result) => result.report);
-  return { products, sources: reports, totalSources: selected.length,
+  return { query: normalizedQuery, products, sources: reports, totalSources: selected.length,
     checkedSources: reports.filter((report) => report.pages > 0).length,
     completeSources: reports.filter((report) => report.status === "complete").length,
     errors: reports.filter((report) => report.status !== "complete").map((report) => `${report.store}: ${report.issues.join("; ")}`),
