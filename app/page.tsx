@@ -79,7 +79,7 @@ export default function Home() {
   const search = useCallback(async (term: string) => {
     const query = term.trim() || "torpedo";
     try { const response = await fetch(`/api/buscar?q=${encodeURIComponent(query)}`, { cache: "no-store" }); if (!response.ok) throw new Error(); setData(await response.json()); }
-    catch { setData({ query, products: [], sources: [], totalSources: 17, checkedSources: 0, completeSources: 0, errors: ["No pudimos conectar con las tiendas. Probá actualizar en unos minutos."], updatedAt: new Date().toISOString() }); }
+    catch { setData({ query, products: [], sources: [], totalSources: 32, checkedSources: 0, completeSources: 0, errors: ["No pudimos conectar con las tiendas. Probá actualizar en unos minutos."], updatedAt: new Date().toISOString() }); }
     finally { setLoading(false); }
   }, []);
 

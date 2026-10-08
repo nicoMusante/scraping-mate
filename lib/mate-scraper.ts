@@ -25,6 +25,21 @@ export const sources: Source[] = [
   { store: "Pa' Mate", url: "https://pamate.com.ar/search/?q=torpedo" },
   { store: "La Pampa Mates", url: "https://lapampamates.com/?s=torpedo&post_type=product" },
   { store: "Matermos", url: "https://www.matermos.com/search/?q=torpedo" },
+  { store: "Pipe Mates", url: "https://www.pipemates.com.ar/?s=torpedo&post_type=product" },
+  { store: "Negro Mates", url: "https://negromates.empretienda.com.ar/?q=torpedo" },
+  { store: "Mates Beltrán", url: "https://matesbeltran.com.ar/?q=torpedo" },
+  { store: "Gancho Mates", url: "https://www.ganchomates.com.ar/?q=torpedo" },
+  { store: "Matienzo Mates", url: "https://matienzomates.com.ar/?s=torpedo&post_type=product" },
+  { store: "Mamate Mates", url: "https://mamatemates.mitiendanube.com/search/?q=torpedo" },
+  { store: "La Ronda Mates", url: "https://larondamates.com/?s=torpedo&post_type=product" },
+  { store: "Mates del Sur", url: "https://www.matesdelsur.com.ar/search/?q=torpedo" },
+  { store: "Mates El Noble", url: "https://mateselnoble.com.ar/search/?q=torpedo" },
+  { store: "Amor de Mates", url: "https://www.amordemates.ar/?s=torpedo&post_type=product" },
+  { store: "Cébalo Amargo", url: "https://cebaloamargo.empretienda.com.ar/?q=torpedo" },
+  { store: "CZ Mates", url: "https://czmates.empretienda.com.ar/?q=torpedo" },
+  { store: "Mate Charrúa", url: "https://matecharrua.empretienda.com.ar/?q=torpedo" },
+  { store: "Mates YCH", url: "https://matesych.mitiendanube.com/search/?q=torpedo" },
+  { store: "Mateistas", url: "https://mateistas.mitiendanube.com/search/?q=torpedo" },
 ];
 
 export function normalizeSearchQuery(value?: string | null): string {
