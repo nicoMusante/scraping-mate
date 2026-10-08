@@ -60,7 +60,7 @@ Cada `git push` a `main` generará un deployment de producción. Las ramas y pul
 
 ## Consideraciones
 
-- Las 17 fuentes están configuradas en `lib/mate-scraper.ts`. Se consultan hasta tres tiendas simultáneamente y las páginas de cada tienda se recorren de a una.
+- Las 32 fuentes están configuradas en `lib/mate-scraper.ts`. Se consultan hasta tres tiendas simultáneamente y las páginas de cada tienda se recorren de a una.
 - Cada petición tiene un límite de 12 segundos. La búsqueda tiene un presupuesto global de cuatro minutos y la función de Vercel declara `maxDuration = 300`. Si el plan de hosting impone un límite menor, debe ajustarse el presupuesto o distribuirse la búsqueda entre solicitudes.
 - No hay recorte de 20 resultados por tienda. El límite de seguridad de 100 páginas por fuente y los límites de tiempo siempre se informan como cobertura incompleta.
 - Las tiendas pueden cambiar su HTML, su disponibilidad o bloquear las consultas. Los errores se atribuyen a la tienda correspondiente y se conservan los resultados obtenidos antes del fallo.

@@ -44,6 +44,8 @@ No transformar esta ruta en una consulta ejecutada exclusivamente en el navegado
 8. El endpoint devuelve cobertura y problemas por tienda. Una petición exitosa no implica que se haya podido terminar la revisión del catálogo.
 9. Cheerio permite asociar el precio por transferencia a la tarjeta o ficha correcta. Leer el método de pago y el importe publicado, o calcular un porcentaje explícito e incondicional de transferencia. No usar cuotas, precios sin impuestos, descuentos de tarjeta ni promociones con mínimos o cupones. Si hay variantes, usar precios de variantes disponibles y marcar “Desde” cuando sus importes difieren. Consultar la ficha original cuando el listado no publica un precio por transferencia.
 
+No incorporar ni recomendar como fuentes Kumpel Mates, Mates San Fco, Tendencia Mates, Mates del Mar, Cushe Mates, Mateleto, Mates La Plata, Mates Imperiales, Arte Mates, Kiro Mates, Mate sin Dueño ni Mate Trelew, salvo que la persona usuaria revoque expresamente esa decisión.
+
 Las tiendas cambian HTML, datos estructurados y medidas anti-bots con frecuencia. Si una fuente deja de devolver resultados:
 
 - Verificar primero la URL de búsqueda/categoría de esa tienda.
