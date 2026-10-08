@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { extractRecords, inspect, isSingleMate, pricesFromHtml, productKey, productsFromRecords, sourcesForQuery, withLimit } from "../lib/mate-scraper.ts";
+import { searchContentHash } from "../lib/search-cache.ts";
 
 const source = { store: "Tienda de prueba", url: "https://tienda.example/search/?q=torpedo" };
 const product = (id, overrides = {}) => ({ "@type": "Product", name: `Mate Torpedo ${id}`, url: `/productos/torpedo-${id}/`,
@@ -61,6 +62,12 @@ test("search terms change store URLs and only retain individual matching mates",
   assert.equal(isSingleMate("Mate Imperial Cuero Negro", "", "imperial cuero"), true);
   assert.equal(isSingleMate("Mate Torpedo Cuero", "", "imperial cuero"), false);
   assert.deepEqual(productsFromRecords(records, source, "imperial cuero").map((item) => item.name), ["Mate Imperial Cuero Negro"]);
+});
+
+test("the search cache ignores the scrape timestamp when checking for changed results", () => {
+  const result = { query: "torpedo", products: [], sources: [], totalSources: 32, checkedSources: 32, completeSources: 30, errors: [], updatedAt: "2026-10-08T12:00:00.000Z" };
+  assert.equal(searchContentHash(result), searchContentHash({ ...result, updatedAt: "2026-10-08T12:30:00.000Z" }));
+  assert.notEqual(searchContentHash(result), searchContentHash({ ...result, checkedSources: 31 }));
 });
 
 test("a paginated fragment without a load-more button still leads to page 3; no 20-product cap", async () => {

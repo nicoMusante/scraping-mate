@@ -19,8 +19,9 @@ El detalle de cobertura muestra los resultados por tienda y distingue búsquedas
 - Next.js 16 + React + TypeScript
 - Tailwind CSS
 - Route Handler de Next.js en `/api/buscar` para consultar las tiendas desde el servidor
+- Caché de búsquedas en Supabase: conserva los resultados durante 30 minutos y sólo reemplaza el contenido guardado cuando la revisión detecta cambios.
 
-No requiere base de datos, claves ni variables de entorno.
+Para las cuentas, las marcas sincronizadas y la caché de resultados requiere las variables de Supabase indicadas en `.env.example`.
 
 ## Ejecutar localmente
 
