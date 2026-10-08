@@ -203,8 +203,8 @@ export default function Home() {
       ? "grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4"
       : "grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-6";
 
-  return <main className="min-h-screen bg-[#f6f2eb] text-[#18271f]">
-    <header className="border-b border-[#d7cbb9] bg-[#173b2e] text-white"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
+  return <main className="min-h-dvh bg-[#f6f2eb] text-[#18271f]">
+    <header className="ios-safe-top border-b border-[#d7cbb9] bg-[#173b2e] text-white"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
       <div className="flex items-center gap-3"><Image src="/icon-192.png" alt="Mate Finder" width={40} height={40} priority className="h-10 w-10 rounded-xl" /><div><h1 className="font-serif text-xl leading-none">Mate Finder</h1><p className="mt-1 text-xs tracking-wide text-[#cad8cf]">BUSCADOR DE MATES</p></div></div>
       <div className="flex items-center gap-2"><InstallAppButton /><button onClick={() => { setLoading(true); void search(searchTerm); }} disabled={loading} className="inline-flex h-10 items-center gap-2 rounded-full border border-[#6d947f] px-3 text-sm font-medium transition hover:bg-[#285542] disabled:opacity-60"><RefreshCw size={16} className={loading ? "animate-spin" : ""} /><span className="hidden sm:inline">Actualizar</span></button>{user ? <button type="button" onClick={() => void signOut()} title="Cerrar sesión" className="inline-flex h-10 items-center gap-2 rounded-full border border-[#6d947f] px-3 text-sm font-medium transition hover:bg-[#285542]"><UserRound size={16} /><span className="hidden max-w-36 truncate sm:inline">{user.email}</span><LogOut size={15} /></button> : <button type="button" onClick={() => { setAuthMode("login"); setAuthMessage(""); setAuthOpen(true); }} className="inline-flex h-10 items-center gap-2 rounded-full border border-[#6d947f] px-3 text-sm font-medium transition hover:bg-[#285542]"><LogIn size={16} /><span className="hidden sm:inline">Ingresar</span></button>}</div>
     </div></header>

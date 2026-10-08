@@ -4,10 +4,8 @@
 
 :root { --background: #f6f2eb; --foreground: #18271f; }
 * { box-sizing: border-box; }
-html { background: var(--background); overscroll-behavior-y: none; }
-body { margin: 0; min-width: 320px; background: var(--background); color: var(--foreground); font-family: Arial, Helvetica, sans-serif; -webkit-tap-highlight-color: transparent; }
+html { min-height: 100%; background: var(--background); overscroll-behavior-y: none; }
+body { min-height: 100%; margin: 0; min-width: 320px; padding-bottom: env(safe-area-inset-bottom, 0px); background: var(--background); color: var(--foreground); font-family: Arial, Helvetica, sans-serif; -webkit-tap-highlight-color: transparent; }
 button, select, input { font: inherit; touch-action: manipulation; }
-@media (max-width: 640px) {
-  input, select { font-size: 16px; }
-  body { padding-bottom: env(safe-area-inset-bottom); }
-}
+.ios-safe-top { padding-top: env(safe-area-inset-top, 0px); }
+@media (max-width: 640px) { input, select { font-size: 16px; } }
