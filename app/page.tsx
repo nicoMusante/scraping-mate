@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Grid2X2, Heart, ImageOff, LayoutGrid, List, LoaderCircle, LogIn, LogOut, RefreshCw, Search, SlidersHorizontal, Store, ThumbsDown, ThumbsUp, UserRound } from "lucide-react";
 import type { Product, SourceReport } from "@/lib/mate-scraper";
@@ -16,7 +16,6 @@ type ViewMode = "list" | "grid" | "dense";
 type ResultsMode = "all" | "pages";
 type ProductMarkRow = { product_url: string; mark: MateMark };
 
-const MARKS_STORAGE_KEY = "mate-finder-marks-v1";
 const MATE_TYPES = ["torpedo", "camionero", "imperial", "criollo", "uruguayo", "perita", "galleta"];
 const RESULTS_PER_PAGE = 24;
 
@@ -68,8 +67,8 @@ export default function Home() {
   const [priceOrder, setPriceOrder] = useState<PriceOrder>("featured");
   const [markFilter, setMarkFilter] = useState<MarkFilter>("considering");
   const [marks, setMarks] = useState<Record<string, MateMark>>({});
-  const [marksLoaded, setMarksLoaded] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const activeUserId = useRef<string | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
@@ -93,52 +92,38 @@ export default function Home() {
   }, [search]);
 
   useEffect(() => {
-    const restoreMarks = setTimeout(() => {
-      try {
-        const saved = JSON.parse(window.localStorage.getItem(MARKS_STORAGE_KEY) ?? "{}");
-        if (saved && typeof saved === "object" && !Array.isArray(saved)) {
-          setMarks(Object.fromEntries(Object.entries(saved).filter((entry): entry is [string, MateMark] => entry[1] === "liked" || entry[1] === "disliked")));
-        }
-      } catch { /* Invalid saved data is ignored. */ }
-      setMarksLoaded(true);
-    }, 0);
-    return () => clearTimeout(restoreMarks);
+    window.localStorage.removeItem("mate-finder-marks-v1");
   }, []);
 
-  useEffect(() => {
-    if (marksLoaded) window.localStorage.setItem(MARKS_STORAGE_KEY, JSON.stringify(marks));
-  }, [marks, marksLoaded]);
-
-  const mergeRemoteMarks = useCallback(async (activeUser: User) => {
+  const loadRemoteMarks = useCallback(async (activeUser: User) => {
     const supabase = createClient();
     const { data, error } = await supabase.from("product_marks").select("product_url, mark");
+    if (activeUserId.current !== activeUser.id) return;
     if (error) {
       setAuthMessage("No pudimos cargar tus marcas guardadas. Probá de nuevo.");
       return;
     }
-
     const saved = Object.fromEntries((data as ProductMarkRow[]).map(({ product_url, mark }) => [product_url, mark]));
-    setMarks((local) => {
-      const merged = { ...saved, ...local };
-      const localRows = Object.entries(local).map(([product_url, mark]) => ({ user_id: activeUser.id, product_url, mark }));
-      if (localRows.length) void supabase.from("product_marks").upsert(localRows, { onConflict: "user_id,product_url" });
-      return merged;
-    });
+    setMarks(saved);
   }, []);
 
   useEffect(() => {
     const supabase = createClient();
     void supabase.auth.getUser().then(({ data: { user: activeUser } }) => {
+      activeUserId.current = activeUser?.id ?? null;
       setUser(activeUser);
-      if (activeUser) void mergeRemoteMarks(activeUser);
+      setMarks({});
+      if (activeUser) void loadRemoteMarks(activeUser);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const activeUser = session?.user ?? null;
+      activeUserId.current = activeUser?.id ?? null;
       setUser(activeUser);
-      if (activeUser) void mergeRemoteMarks(activeUser);
+      setMarks({});
+      if (activeUser) void loadRemoteMarks(activeUser);
     });
     return () => subscription.unsubscribe();
-  }, [mergeRemoteMarks]);
+  }, [loadRemoteMarks]);
 
   const submitAuth = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -158,7 +143,9 @@ export default function Home() {
   const signOut = useCallback(async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
+    activeUserId.current = null;
     setUser(null);
+    setMarks({});
   }, []);
 
   const stores = useMemo(() => ["Todas las tiendas", ...(data?.sources.map((item) => item.store) ?? []).sort()], [data]);
@@ -184,21 +171,34 @@ export default function Home() {
   }, [data, marks, markFilter, maximumPrice, minimumPrice, onlyWithPrice, priceOrder, store]);
 
   const setMark = useCallback((product: Product, mark?: MateMark) => {
+    if (!user) {
+      setAuthMode("login");
+      setAuthMessage("Ingresá a tu cuenta para guardar tus marcas.");
+      setAuthOpen(true);
+      return;
+    }
+    const previousMark = marks[product.url];
     setMarks((current) => {
       const next = { ...current };
       if (mark) next[product.url] = mark;
       else delete next[product.url];
       return next;
     });
-    if (!user) return;
     const supabase = createClient();
     const request = mark
       ? supabase.from("product_marks").upsert({ user_id: user.id, product_url: product.url, mark }, { onConflict: "user_id,product_url" })
       : supabase.from("product_marks").delete().eq("product_url", product.url);
     void request.then(({ error }) => {
-      if (error) setAuthMessage("No pudimos guardar tu marca. Revisá tu conexión e intentá otra vez.");
+      if (!error) return;
+      setMarks((current) => {
+        const restored = { ...current };
+        if (previousMark) restored[product.url] = previousMark;
+        else delete restored[product.url];
+        return restored;
+      });
+      setAuthMessage("No pudimos guardar tu marca. Revisá tu conexión e intentá otra vez.");
     });
-  }, [user]);
+  }, [marks, user]);
 
   const compactCards = viewMode !== "list";
   const productGridClass = viewMode === "list"
